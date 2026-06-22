@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+package productmedia.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "productCenter/api/productmedia/v1;v1";
+
+// 商品副图服务
+service ProductMedia {
+  // 上传副图（创建）
+  rpc CreateMedia (CreateMediaRequest) returns (CreateMediaResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/product-media"
+      body: "*"
+    };
+  }
+  // 更新副图
+  rpc UpdateMedia (UpdateMediaRequest) returns (UpdateMediaResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/product-media/{id}"
+      body: "*"
+    };
+  }
+  // 查看副图详情
+  rpc GetMedia (GetMediaRequest) returns (GetMediaResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/product-media/{id}"
+    };
+  }
+  // 分页查询副图列表（支持按商品筛选）
+  rpc ListMedias (ListMediasRequest) returns (ListMediasResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/product-media"
+    };
+  }
+  // 删除副图
+  rpc DeleteMedia (DeleteMediaRequest) returns (DeleteMediaResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/product-media/{id}"
+    };
+  }
+}
+
+// 副图实体
+message MediaInfo {
+  int64  id = 1;
+  int64  product_id = 2;
+  string url = 3;          // 图片URL
+  int64  sort = 4;         // 排序
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+// 创建副图
+message CreateMediaRequest {
+  int64  product_id = 1;
+  string url = 2;
+  int64  sort = 3;
+}
+
+message CreateMediaResponse {
+  MediaInfo media = 1;
+}
+
+// 更新副图
+message UpdateMediaRequest {
+  int64  id = 1;
+  int64  product_id = 2;
+  string url = 3;
+  int64  sort = 4;
+}
+
+message UpdateMediaResponse {
+  MediaInfo media = 1;
+}
+
+// 查看副图详情
+message GetMediaRequest {
+  int64 id = 1;
+}
+
+message GetMediaResponse {
+  MediaInfo media = 1;
+}
+
+// 分页查询副图列表
+message ListMediasRequest {
+  int32 page = 1;        // 页码，默认 1
+  int32 page_size = 2;   // 每页条数，默认 10
+  int64 product_id = 3;  // 按商品筛选（0=全部）
+}
+
+message ListMediasResponse {
+  repeated MediaInfo medias = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+// 删除副图
+message DeleteMediaRequest {
+  int64 id = 1;
+}
+
+message DeleteMediaResponse {
+  bool success = 1;
+}

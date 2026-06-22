@@ -1,0 +1,1255 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: ""
+    version: 0.0.1
+paths:
+    /api/v1/bff/products:
+        get:
+            tags:
+                - BFF
+            description: 商品列表页 — 聚合商品 + 店铺名 + 标签
+            operationId: BFF_ListProducts
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: shopId
+                  in: query
+                  schema:
+                    type: string
+                - name: status
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/bff.v1.ListProductsResponse'
+    /api/v1/bff/products/{id}:
+        get:
+            tags:
+                - BFF
+            description: 商品详情页 — 聚合商品 + 店铺 + 标签 + SKU + 副图
+            operationId: BFF_GetProductDetail
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/bff.v1.GetProductDetailResponse'
+    /api/v1/bff/shops/{id}:
+        get:
+            tags:
+                - BFF
+            description: 店铺主页 — 聚合店铺 + 商品列表
+            operationId: BFF_GetShopHome
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/bff.v1.GetShopHomeResponse'
+    /api/v1/product-media:
+        get:
+            tags:
+                - ProductMedia
+            description: 分页查询副图列表（支持按商品筛选）
+            operationId: ProductMedia_ListMedias
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: productId
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/productmedia.v1.ListMediasResponse'
+        post:
+            tags:
+                - ProductMedia
+            description: 上传副图（创建）
+            operationId: ProductMedia_CreateMedia
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/productmedia.v1.CreateMediaRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/productmedia.v1.CreateMediaResponse'
+    /api/v1/product-media/{id}:
+        get:
+            tags:
+                - ProductMedia
+            description: 查看副图详情
+            operationId: ProductMedia_GetMedia
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/productmedia.v1.GetMediaResponse'
+        put:
+            tags:
+                - ProductMedia
+            description: 更新副图
+            operationId: ProductMedia_UpdateMedia
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/productmedia.v1.UpdateMediaRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/productmedia.v1.UpdateMediaResponse'
+        delete:
+            tags:
+                - ProductMedia
+            description: 删除副图
+            operationId: ProductMedia_DeleteMedia
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/productmedia.v1.DeleteMediaResponse'
+    /api/v1/products:
+        get:
+            tags:
+                - Product
+            description: 分页查询商品列表（含店铺信息）
+            operationId: Product_ListProducts
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: shopId
+                  in: query
+                  schema:
+                    type: string
+                - name: status
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/product.v1.ListProductsResponse'
+        post:
+            tags:
+                - Product
+            description: 创建商品
+            operationId: Product_CreateProduct
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/product.v1.CreateProductRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/product.v1.CreateProductResponse'
+    /api/v1/products/{id}:
+        get:
+            tags:
+                - Product
+            description: 查看商品详情（含店铺信息）
+            operationId: Product_GetProduct
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/product.v1.GetProductResponse'
+        put:
+            tags:
+                - Product
+            description: 更新商品
+            operationId: Product_UpdateProduct
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/product.v1.UpdateProductRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/product.v1.UpdateProductResponse'
+        delete:
+            tags:
+                - Product
+            description: 删除商品
+            operationId: Product_DeleteProduct
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/product.v1.DeleteProductResponse'
+    /api/v1/shops:
+        get:
+            tags:
+                - Shop
+            description: 分页查询店铺列表
+            operationId: Shop_ListShops
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/shop.v1.ListShopsResponse'
+        post:
+            tags:
+                - Shop
+            description: 创建店铺
+            operationId: Shop_CreateShop
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/shop.v1.CreateShopRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/shop.v1.CreateShopResponse'
+    /api/v1/shops/{id}:
+        get:
+            tags:
+                - Shop
+            description: 查看店铺详情
+            operationId: Shop_GetShop
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/shop.v1.GetShopResponse'
+        put:
+            tags:
+                - Shop
+            description: 更新店铺
+            operationId: Shop_UpdateShop
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/shop.v1.UpdateShopRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/shop.v1.UpdateShopResponse'
+        delete:
+            tags:
+                - Shop
+            description: 删除店铺
+            operationId: Shop_DeleteShop
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/shop.v1.DeleteShopResponse'
+    /api/v1/skus:
+        get:
+            tags:
+                - Sku
+            description: 分页查询SKU列表（支持按商品筛选）
+            operationId: Sku_ListSkus
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: productId
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/sku.v1.ListSkusResponse'
+        post:
+            tags:
+                - Sku
+            description: 创建SKU
+            operationId: Sku_CreateSku
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/sku.v1.CreateSkuRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/sku.v1.CreateSkuResponse'
+    /api/v1/skus/{id}:
+        get:
+            tags:
+                - Sku
+            description: 查看SKU详情
+            operationId: Sku_GetSku
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/sku.v1.GetSkuResponse'
+        put:
+            tags:
+                - Sku
+            description: 更新SKU
+            operationId: Sku_UpdateSku
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/sku.v1.UpdateSkuRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/sku.v1.UpdateSkuResponse'
+        delete:
+            tags:
+                - Sku
+            description: 删除SKU
+            operationId: Sku_DeleteSku
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/sku.v1.DeleteSkuResponse'
+    /api/v1/tags:
+        get:
+            tags:
+                - ProductTag
+            description: 分页查询标签列表
+            operationId: ProductTag_ListTags
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/producttag.v1.ListTagsResponse'
+        post:
+            tags:
+                - ProductTag
+            description: 创建标签
+            operationId: ProductTag_CreateTag
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/producttag.v1.CreateTagRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/producttag.v1.CreateTagResponse'
+    /api/v1/tags/{id}:
+        get:
+            tags:
+                - ProductTag
+            description: 查看标签详情
+            operationId: ProductTag_GetTag
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/producttag.v1.GetTagResponse'
+        put:
+            tags:
+                - ProductTag
+            description: 更新标签
+            operationId: ProductTag_UpdateTag
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: int32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/producttag.v1.UpdateTagRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/producttag.v1.UpdateTagResponse'
+        delete:
+            tags:
+                - ProductTag
+            description: 删除标签
+            operationId: ProductTag_DeleteTag
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/producttag.v1.DeleteTagResponse'
+    /helloworld/{name}:
+        get:
+            tags:
+                - Greeter
+            description: Sends a greeting
+            operationId: Greeter_SayHello
+            parameters:
+                - name: name
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/helloworld.v1.HelloReply'
+components:
+    schemas:
+        bff.v1.GetProductDetailResponse:
+            type: object
+            properties:
+                product:
+                    $ref: '#/components/schemas/bff.v1.ProductDetail'
+        bff.v1.GetShopHomeResponse:
+            type: object
+            properties:
+                shop:
+                    $ref: '#/components/schemas/bff.v1.ShopHome'
+        bff.v1.ListProductsResponse:
+            type: object
+            properties:
+                products:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/bff.v1.ProductListItem'
+                total:
+                    type: integer
+                    format: int32
+                page:
+                    type: integer
+                    format: int32
+                pageSize:
+                    type: integer
+                    format: int32
+        bff.v1.Media:
+            type: object
+            properties:
+                id:
+                    type: string
+                url:
+                    type: string
+                sort:
+                    type: integer
+                    format: int32
+        bff.v1.ProductDetail:
+            type: object
+            properties:
+                id:
+                    type: string
+                shopId:
+                    type: string
+                shopName:
+                    type: string
+                name:
+                    type: string
+                type:
+                    type: string
+                description:
+                    type: string
+                mainImageUrl:
+                    type: string
+                price:
+                    type: string
+                compareAtPrice:
+                    type: string
+                status:
+                    type: integer
+                    format: int32
+                sort:
+                    type: integer
+                    format: int32
+                tags:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/bff.v1.Tag'
+                medias:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/bff.v1.Media'
+                skus:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/bff.v1.Sku'
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+            description: 商品详情页聚合数据
+        bff.v1.ProductListItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                shopId:
+                    type: string
+                shopName:
+                    type: string
+                name:
+                    type: string
+                type:
+                    type: string
+                mainImageUrl:
+                    type: string
+                price:
+                    type: string
+                compareAtPrice:
+                    type: string
+                status:
+                    type: integer
+                    format: int32
+                tags:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/bff.v1.Tag'
+                createdAt:
+                    type: string
+            description: 商品列表项（精简版）
+        bff.v1.ShopHome:
+            type: object
+            properties:
+                id:
+                    type: string
+                shopName:
+                    type: string
+                description:
+                    type: string
+                products:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/bff.v1.ProductListItem'
+            description: 店铺主页数据
+        bff.v1.Sku:
+            type: object
+            properties:
+                id:
+                    type: string
+                sku:
+                    type: string
+                title:
+                    type: string
+                price:
+                    type: string
+                stock:
+                    type: integer
+                    format: int32
+                imgUrl:
+                    type: string
+        bff.v1.Tag:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: int32
+                name:
+                    type: string
+        helloworld.v1.HelloReply:
+            type: object
+            properties:
+                message:
+                    type: string
+            description: The response message containing the greetings
+        product.v1.CreateProductRequest:
+            type: object
+            properties:
+                shopId:
+                    type: string
+                name:
+                    type: string
+                type:
+                    type: string
+                description:
+                    type: string
+                mainImageUrl:
+                    type: string
+                price:
+                    type: string
+                compareAtPrice:
+                    type: string
+                status:
+                    type: integer
+                    format: int32
+                sort:
+                    type: integer
+                    format: int32
+                tagIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: int32
+            description: 创建商品
+        product.v1.CreateProductResponse:
+            type: object
+            properties:
+                product:
+                    $ref: '#/components/schemas/product.v1.ProductInfo'
+        product.v1.DeleteProductResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        product.v1.GetProductResponse:
+            type: object
+            properties:
+                product:
+                    $ref: '#/components/schemas/product.v1.ProductInfo'
+        product.v1.ListProductsResponse:
+            type: object
+            properties:
+                products:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/product.v1.ProductInfo'
+                total:
+                    type: integer
+                    format: int32
+                page:
+                    type: integer
+                    format: int32
+                pageSize:
+                    type: integer
+                    format: int32
+        product.v1.ProductInfo:
+            type: object
+            properties:
+                id:
+                    type: string
+                shopId:
+                    type: string
+                shopName:
+                    type: string
+                name:
+                    type: string
+                type:
+                    type: string
+                description:
+                    type: string
+                mainImageUrl:
+                    type: string
+                price:
+                    type: string
+                compareAtPrice:
+                    type: string
+                status:
+                    type: integer
+                    format: int32
+                sort:
+                    type: integer
+                    format: int32
+                tagIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: int32
+                tagNames:
+                    type: array
+                    items:
+                        type: string
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+            description: 商品实体（API 返回结构）
+        product.v1.UpdateProductRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                type:
+                    type: string
+                description:
+                    type: string
+                mainImageUrl:
+                    type: string
+                price:
+                    type: string
+                compareAtPrice:
+                    type: string
+                status:
+                    type: integer
+                    format: int32
+                sort:
+                    type: integer
+                    format: int32
+                tagIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: int32
+            description: 更新商品
+        product.v1.UpdateProductResponse:
+            type: object
+            properties:
+                product:
+                    $ref: '#/components/schemas/product.v1.ProductInfo'
+        productmedia.v1.CreateMediaRequest:
+            type: object
+            properties:
+                productId:
+                    type: string
+                url:
+                    type: string
+                sort:
+                    type: string
+            description: 创建副图
+        productmedia.v1.CreateMediaResponse:
+            type: object
+            properties:
+                media:
+                    $ref: '#/components/schemas/productmedia.v1.MediaInfo'
+        productmedia.v1.DeleteMediaResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        productmedia.v1.GetMediaResponse:
+            type: object
+            properties:
+                media:
+                    $ref: '#/components/schemas/productmedia.v1.MediaInfo'
+        productmedia.v1.ListMediasResponse:
+            type: object
+            properties:
+                medias:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/productmedia.v1.MediaInfo'
+                total:
+                    type: integer
+                    format: int32
+                page:
+                    type: integer
+                    format: int32
+                pageSize:
+                    type: integer
+                    format: int32
+        productmedia.v1.MediaInfo:
+            type: object
+            properties:
+                id:
+                    type: string
+                productId:
+                    type: string
+                url:
+                    type: string
+                sort:
+                    type: string
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+            description: 副图实体
+        productmedia.v1.UpdateMediaRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                productId:
+                    type: string
+                url:
+                    type: string
+                sort:
+                    type: string
+            description: 更新副图
+        productmedia.v1.UpdateMediaResponse:
+            type: object
+            properties:
+                media:
+                    $ref: '#/components/schemas/productmedia.v1.MediaInfo'
+        producttag.v1.CreateTagRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                sort:
+                    type: integer
+                    format: int32
+            description: 创建标签
+        producttag.v1.CreateTagResponse:
+            type: object
+            properties:
+                tag:
+                    $ref: '#/components/schemas/producttag.v1.TagInfo'
+        producttag.v1.DeleteTagResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        producttag.v1.GetTagResponse:
+            type: object
+            properties:
+                tag:
+                    $ref: '#/components/schemas/producttag.v1.TagInfo'
+        producttag.v1.ListTagsResponse:
+            type: object
+            properties:
+                tags:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/producttag.v1.TagInfo'
+                total:
+                    type: integer
+                    format: int32
+                page:
+                    type: integer
+                    format: int32
+                pageSize:
+                    type: integer
+                    format: int32
+        producttag.v1.TagInfo:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: int32
+                name:
+                    type: string
+                sort:
+                    type: integer
+                    format: int32
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+            description: 标签实体
+        producttag.v1.UpdateTagRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: int32
+                name:
+                    type: string
+                sort:
+                    type: integer
+                    format: int32
+            description: 更新标签
+        producttag.v1.UpdateTagResponse:
+            type: object
+            properties:
+                tag:
+                    $ref: '#/components/schemas/producttag.v1.TagInfo'
+        shop.v1.CreateShopRequest:
+            type: object
+            properties:
+                shopName:
+                    type: string
+                description:
+                    type: string
+            description: 创建店铺
+        shop.v1.CreateShopResponse:
+            type: object
+            properties:
+                shop:
+                    $ref: '#/components/schemas/shop.v1.ShopInfo'
+        shop.v1.DeleteShopResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        shop.v1.GetShopResponse:
+            type: object
+            properties:
+                shop:
+                    $ref: '#/components/schemas/shop.v1.ShopInfo'
+        shop.v1.ListShopsResponse:
+            type: object
+            properties:
+                shops:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/shop.v1.ShopInfo'
+                total:
+                    type: integer
+                    format: int32
+                page:
+                    type: integer
+                    format: int32
+                pageSize:
+                    type: integer
+                    format: int32
+        shop.v1.ShopInfo:
+            type: object
+            properties:
+                id:
+                    type: string
+                shopName:
+                    type: string
+                description:
+                    type: string
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+            description: 店铺实体
+        shop.v1.UpdateShopRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                shopName:
+                    type: string
+                description:
+                    type: string
+            description: 更新店铺
+        shop.v1.UpdateShopResponse:
+            type: object
+            properties:
+                shop:
+                    $ref: '#/components/schemas/shop.v1.ShopInfo'
+        sku.v1.CreateSkuRequest:
+            type: object
+            properties:
+                productId:
+                    type: string
+                sku:
+                    type: string
+                title:
+                    type: string
+                price:
+                    type: string
+                stock:
+                    type: string
+                imgUrl:
+                    type: string
+            description: 创建SKU
+        sku.v1.CreateSkuResponse:
+            type: object
+            properties:
+                sku:
+                    $ref: '#/components/schemas/sku.v1.SkuInfo'
+        sku.v1.DeleteSkuResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        sku.v1.GetSkuResponse:
+            type: object
+            properties:
+                sku:
+                    $ref: '#/components/schemas/sku.v1.SkuInfo'
+        sku.v1.ListSkusResponse:
+            type: object
+            properties:
+                skus:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/sku.v1.SkuInfo'
+                total:
+                    type: integer
+                    format: int32
+                page:
+                    type: integer
+                    format: int32
+                pageSize:
+                    type: integer
+                    format: int32
+        sku.v1.SkuInfo:
+            type: object
+            properties:
+                id:
+                    type: string
+                productId:
+                    type: string
+                sku:
+                    type: string
+                title:
+                    type: string
+                price:
+                    type: string
+                stock:
+                    type: string
+                imgUrl:
+                    type: string
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+            description: SKU实体
+        sku.v1.UpdateSkuRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                productId:
+                    type: string
+                sku:
+                    type: string
+                title:
+                    type: string
+                price:
+                    type: string
+                stock:
+                    type: string
+                imgUrl:
+                    type: string
+            description: 更新SKU
+        sku.v1.UpdateSkuResponse:
+            type: object
+            properties:
+                sku:
+                    $ref: '#/components/schemas/sku.v1.SkuInfo'
+tags:
+    - name: BFF
+      description: BFF 聚合服务 — 面向前端的统一入口
+    - name: Greeter
+      description: The greeting service definition.
+    - name: Product
+      description: 商品中心服务
+    - name: ProductMedia
+      description: 商品副图服务
+    - name: ProductTag
+      description: 商品标签服务
+    - name: Shop
+      description: 店铺服务
+    - name: Sku
+      description: 商品SKU服务

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package producttag.v1;
+
+option go_package = "productCenter/api/producttag/v1;v1";
+option java_multiple_files = true;
+option java_package = "producttag.v1";
+option objc_class_prefix = "APIProductTagV1";
+
+enum ErrorReason {
+  PRODUCT_TAG_UNSPECIFIED = 0;
+  
+  PRODUCT_TAG_NOT_FOUND = 1;
+  PRODUCT_TAG_NAME_EMPTY = 2;
+}

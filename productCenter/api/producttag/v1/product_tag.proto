@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package producttag.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "productCenter/api/producttag/v1;v1";
+
+// 商品标签服务
+service ProductTag {
+  // 创建标签
+  rpc CreateTag (CreateTagRequest) returns (CreateTagResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/tags"
+      body: "*"
+    };
+  }
+  // 更新标签
+  rpc UpdateTag (UpdateTagRequest) returns (UpdateTagResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/tags/{id}"
+      body: "*"
+    };
+  }
+  // 查看标签详情
+  rpc GetTag (GetTagRequest) returns (GetTagResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/tags/{id}"
+    };
+  }
+  // 分页查询标签列表
+  rpc ListTags (ListTagsRequest) returns (ListTagsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/tags"
+    };
+  }
+  // 删除标签
+  rpc DeleteTag (DeleteTagRequest) returns (DeleteTagResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/tags/{id}"
+    };
+  }
+}
+
+// 标签实体
+message TagInfo {
+  int32  id = 1;
+  string name = 2;
+  int32  sort = 3;
+  string created_at = 4;
+  string updated_at = 5;
+}
+
+// 创建标签
+message CreateTagRequest {
+  string name = 1;
+  int32  sort = 2;
+}
+
+message CreateTagResponse {
+  TagInfo tag = 1;
+}
+
+// 更新标签
+message UpdateTagRequest {
+  int32  id = 1;
+  string name = 2;
+  int32  sort = 3;
+}
+
+message UpdateTagResponse {
+  TagInfo tag = 1;
+}
+
+// 查看标签详情
+message GetTagRequest {
+  int32 id = 1;
+}
+
+message GetTagResponse {
+  TagInfo tag = 1;
+}
+
+// 分页查询标签列表
+message ListTagsRequest {
+  int32 page = 1;        // 页码，默认 1
+  int32 page_size = 2;   // 每页条数，默认 10
+}
+
+message ListTagsResponse {
+  repeated TagInfo tags = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+// 删除标签
+message DeleteTagRequest {
+  int32 id = 1;
+}
+
+message DeleteTagResponse {
+  bool success = 1;
+}

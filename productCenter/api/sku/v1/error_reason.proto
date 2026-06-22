@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package sku.v1;
+
+option go_package = "productCenter/api/sku/v1;v1";
+option java_multiple_files = true;
+option java_package = "sku.v1";
+option objc_class_prefix = "APISkuV1";
+
+enum ErrorReason {
+  SKU_UNSPECIFIED = 0;
+  
+  SKU_NOT_FOUND = 1;
+  SKU_PRODUCT_ID_INVALID = 2;
+  SKU_PRICE_INVALID = 3;
+  SKU_STOCK_INVALID = 4;
+}

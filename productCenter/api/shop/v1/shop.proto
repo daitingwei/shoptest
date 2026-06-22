@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package shop.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "productCenter/api/shop/v1;v1";
+
+// 店铺服务
+service Shop {
+  // 创建店铺
+  rpc CreateShop (CreateShopRequest) returns (CreateShopResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/shops"
+      body: "*"
+    };
+  }
+  // 更新店铺
+  rpc UpdateShop (UpdateShopRequest) returns (UpdateShopResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/shops/{id}"
+      body: "*"
+    };
+  }
+  // 查看店铺详情
+  rpc GetShop (GetShopRequest) returns (GetShopResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/shops/{id}"
+    };
+  }
+  // 分页查询店铺列表
+  rpc ListShops (ListShopsRequest) returns (ListShopsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/shops"
+    };
+  }
+  // 删除店铺
+  rpc DeleteShop (DeleteShopRequest) returns (DeleteShopResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/shops/{id}"
+    };
+  }
+}
+
+// 店铺实体
+message ShopInfo {
+  int64  id = 1;
+  string shop_name = 2;
+  string description = 3;
+  string created_at = 4;
+  string updated_at = 5;
+}
+
+// 创建店铺
+message CreateShopRequest {
+  string shop_name = 1;
+  string description = 2;
+}
+
+message CreateShopResponse {
+  ShopInfo shop = 1;
+}
+
+// 更新店铺
+message UpdateShopRequest {
+  int64  id = 1;
+  string shop_name = 2;
+  string description = 3;
+}
+
+message UpdateShopResponse {
+  ShopInfo shop = 1;
+}
+
+// 查看店铺详情
+message GetShopRequest {
+  int64 id = 1;
+}
+
+message GetShopResponse {
+  ShopInfo shop = 1;
+}
+
+// 分页查询店铺列表
+message ListShopsRequest {
+  int32 page = 1;        // 页码，默认 1
+  int32 page_size = 2;   // 每页条数，默认 10
+}
+
+message ListShopsResponse {
+  repeated ShopInfo shops = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+// 删除店铺
+message DeleteShopRequest {
+  int64 id = 1;
+}
+
+message DeleteShopResponse {
+  bool success = 1;
+}

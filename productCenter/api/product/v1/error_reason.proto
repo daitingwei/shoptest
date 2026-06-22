@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package product.v1;
+
+option go_package = "productCenter/api/product/v1;v1";
+option java_multiple_files = true;
+option java_package = "product.v1";
+option objc_class_prefix = "APIProductV1";
+
+enum ErrorReason {
+  PRODUCT_UNSPECIFIED = 0;
+  
+  PRODUCT_NOT_FOUND = 1;
+  PRODUCT_NAME_EMPTY = 2;
+  PRODUCT_PRICE_INVALID = 3;
+}

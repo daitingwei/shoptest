@@ -1,0 +1,131 @@
+syntax = "proto3";
+
+package product.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "productCenter/api/product/v1;v1";
+
+// 商品中心服务
+service Product {
+  // 创建商品
+  rpc CreateProduct (CreateProductRequest) returns (CreateProductResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products"
+      body: "*"
+    };
+  }
+  // 更新商品
+  rpc UpdateProduct (UpdateProductRequest) returns (UpdateProductResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/products/{id}"
+      body: "*"
+    };
+  }
+  // 查看商品详情（含店铺信息）
+  rpc GetProduct (GetProductRequest) returns (GetProductResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/{id}"
+    };
+  }
+  // 分页查询商品列表（含店铺信息）
+  rpc ListProducts (ListProductsRequest) returns (ListProductsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products"
+    };
+  }
+  // 删除商品
+  rpc DeleteProduct (DeleteProductRequest) returns (DeleteProductResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/products/{id}"
+    };
+  }
+}
+
+// 商品实体（API 返回结构）
+message ProductInfo {
+  int64  id = 1;
+  int64  shop_id = 2;
+  string shop_name = 3;                // 店铺名称（JOIN 填充）
+  string name = 4;
+  string type = 15;                    // 商品主类型（数码/家居/服饰 等）
+  string description = 5;
+  string main_image_url = 6;
+  int64  price = 7;                    // 分
+  int64  compare_at_price = 8;         // 划线价（分）
+  int32  status = 9;                   // 0=草稿 1=上架 2=下架
+  int32  sort = 10;
+  repeated int32 tag_ids = 11;         // 标签 ID 列表
+  repeated string tag_names = 12;      // 标签名称列表
+  string created_at = 13;
+  string updated_at = 14;
+}
+
+// 创建商品
+message CreateProductRequest {
+  int64  shop_id = 1;
+  string name = 2;
+  string type = 10;                    // 商品主类型
+  string description = 3;
+  string main_image_url = 4;
+  int64  price = 5;
+  int64  compare_at_price = 6;
+  int32  status = 7;
+  int32  sort = 8;
+  repeated int32 tag_ids = 9;
+}
+
+message CreateProductResponse {
+  ProductInfo product = 1;
+}
+
+// 更新商品
+message UpdateProductRequest {
+  int64  id = 1;
+  string name = 2;
+  string type = 10;                    // 商品主类型
+  string description = 3;
+  string main_image_url = 4;
+  int64  price = 5;
+  int64  compare_at_price = 6;
+  int32  status = 7;
+  int32  sort = 8;
+  repeated int32 tag_ids = 9;
+}
+
+message UpdateProductResponse {
+  ProductInfo product = 1;
+}
+
+// 查看商品详情
+message GetProductRequest {
+  int64 id = 1;
+}
+
+message GetProductResponse {
+  ProductInfo product = 1;
+}
+
+// 分页查询商品列表
+message ListProductsRequest {
+  int32 page = 1;        // 页码，默认 1
+  int32 page_size = 2;   // 每页条数，默认 10
+  int64 shop_id = 3;     // 按店铺筛选（0=全部）
+  int32 status = 4;      // 按状态筛选（-1=全部）
+}
+
+message ListProductsResponse {
+  repeated ProductInfo products = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+// 删除商品
+message DeleteProductRequest {
+  int64 id = 1;
+}
+
+message DeleteProductResponse {
+  bool success = 1;
+}

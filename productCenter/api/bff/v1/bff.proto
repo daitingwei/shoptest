@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+package bff.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "productCenter/api/bff/v1;v1";
+
+// BFF 聚合服务 — 面向前端的统一入口
+service BFF {
+  // 商品详情页 — 聚合商品 + 店铺 + 标签 + SKU + 副图
+  rpc GetProductDetail (GetProductDetailRequest) returns (GetProductDetailResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bff/products/{id}"
+    };
+  }
+
+  // 商品列表页 — 聚合商品 + 店铺名 + 标签
+  rpc ListProducts (ListProductsRequest) returns (ListProductsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bff/products"
+    };
+  }
+
+  // 店铺主页 — 聚合店铺 + 商品列表
+  rpc GetShopHome (GetShopHomeRequest) returns (GetShopHomeResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bff/shops/{id}"
+    };
+  }
+}
+
+// 商品详情页聚合数据
+message ProductDetail {
+  int64  id = 1;
+  int64  shop_id = 2;
+  string shop_name = 3;
+  string name = 4;
+  string type = 16;                    // 商品主类型
+  string description = 5;
+  string main_image_url = 6;
+  int64  price = 7;
+  int64  compare_at_price = 8;
+  int32  status = 9;
+  int32  sort = 10;
+  repeated Tag tags = 11;              // 标签列表
+  repeated Media medias = 12;          // 副图列表
+  repeated Sku skus = 13;              // SKU 列表
+  string created_at = 14;
+  string updated_at = 15;
+}
+
+message Tag {
+  int32  id = 1;
+  string name = 2;
+}
+
+message Media {
+  int64  id = 1;
+  string url = 2;
+  int32  sort = 3;
+}
+
+message Sku {
+  int64  id = 1;
+  string sku = 2;
+  string title = 3;
+  int64  price = 4;
+  int32  stock = 5;
+  string img_url = 6;
+}
+
+// 商品列表项（精简版）
+message ProductListItem {
+  int64  id = 1;
+  int64  shop_id = 2;
+  string shop_name = 3;
+  string name = 4;
+  string type = 11;                    // 商品主类型
+  string main_image_url = 5;
+  int64  price = 6;
+  int64  compare_at_price = 7;
+  int32  status = 8;
+  repeated Tag tags = 9;
+  string created_at = 10;
+}
+
+// 店铺主页数据
+message ShopHome {
+  int64  id = 1;
+  string shop_name = 2;
+  string description = 3;
+  repeated ProductListItem products = 4;
+}
+
+// 商品详情请求
+message GetProductDetailRequest {
+  int64 id = 1;
+}
+
+message GetProductDetailResponse {
+  ProductDetail product = 1;
+}
+
+// 商品列表请求
+message ListProductsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  int64 shop_id = 3;
+  int32 status = 4;
+}
+
+message ListProductsResponse {
+  repeated ProductListItem products = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+// 店铺主页请求
+message GetShopHomeRequest {
+  int64 id = 1;
+  int32 page = 2;        // 店铺商品分页
+  int32 page_size = 3;
+}
+
+message GetShopHomeResponse {
+  ShopHome shop = 1;
+}
