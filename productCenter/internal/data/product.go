@@ -110,7 +110,7 @@ func (r *productRepo) Update(ctx context.Context, product *biz.Product, tagIDs [
 // Get 根据ID获取商品详情（含标签信息）
 func (r *productRepo) Get(ctx context.Context, id int64) (*biz.Product, error) {
 	var po Product
-	if err := r.data.db.WithContext(ctx).Preload("Tags").First(&po, id).Error; err != nil {
+	if err := r.data.db.WithContext(ctx).Preload("Tags").Preload("Shop").First(&po, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, biz.ErrProductNotFound
 		}
@@ -120,6 +120,7 @@ func (r *productRepo) Get(ctx context.Context, id int64) (*biz.Product, error) {
 	product := &biz.Product{
 		ID:             po.ID,
 		ShopID:         po.ShopID,
+		ShopName:       po.Shop.ShopName,
 		Name:           po.Name,
 		Type:           po.Type,
 		Description:    po.Description,
@@ -159,7 +160,7 @@ func (r *productRepo) List(ctx context.Context, page, pageSize int32, shopID int
 	}
 
 	offset := (int(page) - 1) * int(pageSize)
-	if err := db.Preload("Tags").Order("sort asc, id desc").Offset(offset).Limit(int(pageSize)).Find(&pos).Error; err != nil {
+	if err := db.Preload("Tags").Preload("Shop").Order("sort asc, id desc").Offset(offset).Limit(int(pageSize)).Find(&pos).Error; err != nil {
 		return nil, 0, err
 	}
 
@@ -168,6 +169,7 @@ func (r *productRepo) List(ctx context.Context, page, pageSize int32, shopID int
 		product := &biz.Product{
 			ID:             po.ID,
 			ShopID:         po.ShopID,
+			ShopName:       po.Shop.ShopName,
 			Name:           po.Name,
 			Type:           po.Type,
 			Description:    po.Description,

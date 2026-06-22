@@ -48,6 +48,7 @@ type Product struct {
 	UpdatedAt      time.Time      `gorm:"column:updated_at" json:"updated_at"`
 	DeletedAt      gorm.DeletedAt `gorm:"column:deleted_at;index" json:"-"`
 	Tags           []ProductTag   `gorm:"many2many:product_tag_mapping;" json:"tags,omitempty"`
+	Shop           Shop           `gorm:"foreignKey:ShopID" json:"shop,omitempty"`
 }
 
 // TableName 指定 Product 模型对应的数据库表名
