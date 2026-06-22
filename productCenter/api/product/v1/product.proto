@@ -48,10 +48,10 @@ message ProductInfo {
   int64  shop_id = 2;
   string shop_name = 3;                // 店铺名称（JOIN 填充）
   string name = 4;
-  string type = 15;                    // 商品主类型（数码/家居/服饰 等）
+  string type = 15;
   string description = 5;
   string main_image_url = 6;
-  int64  price = 7;                    // 分
+  int64  price = 7;                    // 显示分
   int64  compare_at_price = 8;         // 划线价（分）
   int32  status = 9;                   // 0=草稿 1=上架 2=下架
   int32  sort = 10;
@@ -65,7 +65,7 @@ message ProductInfo {
 message CreateProductRequest {
   int64  shop_id = 1;
   string name = 2;
-  string type = 10;                    // 商品主类型
+  string type = 10;
   string description = 3;
   string main_image_url = 4;
   int64  price = 5;
@@ -83,7 +83,7 @@ message CreateProductResponse {
 message UpdateProductRequest {
   int64  id = 1;
   string name = 2;
-  string type = 10;                    // 商品主类型
+  string type = 10;
   string description = 3;
   string main_image_url = 4;
   int64  price = 5;
