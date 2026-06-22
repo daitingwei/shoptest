@@ -1,51 +1,46 @@
-# Kratos Project Template
+# Product Center
 
-## Install Kratos
-```
-go install github.com/go-kratos/kratos/cmd/kratos/v2@latest
-```
-## Create a service
-```
-# Create a template project
-kratos new server
+商品中心服务，基于 Kratos v2 构建。
 
-cd server
-# Add a proto template
-kratos proto add api/server/server.proto
-# Generate the proto code
-kratos proto client api/server/server.proto
-# Generate the source code of service by proto file
-kratos proto server api/server/server.proto -t internal/service
+## 项目结构
 
+```
+api/                    Proto 定义 + 生成代码
+cmd/productcenter/      入口、Wire 依赖注入
+configs/                配置文件
+internal/
+  server/               HTTP / gRPC 服务注册
+  service/              接口实现（DTO 转换）
+  biz/                  业务逻辑 + 仓储接口
+  data/                 数据层实现（GORM + MySQL）
+```
+
+## 服务模块
+
+| 服务 | 描述 |
+|------|------|
+| Product | 商品 CRUD + 列表查询 |
+| Shop | 店铺 CRUD |
+| SKU | 商品 SKU CRUD |
+| ProductTag | 商品标签 CRUD |
+| ProductMedia | 商品媒体 CRUD |
+| BFF | 前台聚合接口（商品详情、列表页、店铺主页） |
+
+## 启动
+
+```bash
 go generate ./...
 go build -o ./bin/ ./...
-./bin/server -conf ./configs
-```
-## Generate other auxiliary files by Makefile
-```
-# Download and update dependencies
-make init
-# Generate API files (include: pb.go, http, grpc, validate, swagger) by proto file
-make api
-# Generate all files
-make all
-```
-## Automated Initialization (wire)
-```
-# install wire
-go get github.com/google/wire/cmd/wire
-
-# generate wire
-cd cmd/server
-wire
+./bin/productcenter -conf ./configs
 ```
 
-## Docker
+HTTP: `http://localhost:8000`
+gRPC: `localhost:9000`
+
+## 生成代码
+
 ```bash
-# build
-docker build -t <your-docker-image-name> .
-
-# run
-docker run --rm -p 8000:8000 -p 9000:9000 -v </path/to/your/configs>:/data/conf <your-docker-image-name>
+make api      # 生成 proto 代码
+make generate # 生成 wire + go mod tidy
+make all      # 以上全部
 ```
-
