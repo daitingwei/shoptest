@@ -57,6 +57,7 @@ type Sku struct {
 	Price     int       `json:"price"`
 	Stock     int       `json:"stock"`
 	ImgURL    string    `json:"img_url"`
+	Version   int       `json:"version"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

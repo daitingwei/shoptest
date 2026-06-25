@@ -20,6 +20,8 @@ var (
 	ErrSkuStockInvalid = errors.BadRequest(v1.ErrorReason_SKU_STOCK_INVALID.String(), "SKU库存不能为负")
 	// ErrSkuStockInsufficient 库存不足
 	ErrSkuStockInsufficient = errors.New(404, v1.ErrorReason_SKU_STOCK_INSUFFICIENT.String(), "库存不足")
+	// ErrSkuVersionConflict 版本号冲突
+	ErrSkuVersionConflict = errors.New(409, "SKU_VERSION_CONFLICT", "版本号冲突，请重试")
 )
 
 // SkuRepo 商品SKU数据仓库接口，由 data 层实现
@@ -34,8 +36,8 @@ type SkuRepo interface {
 	List(ctx context.Context, page, pageSize int32, productID int64) ([]*Sku, int64, error)
 	// Delete 删除SKU
 	Delete(ctx context.Context, id int64) error
-	// DeductStock 扣减库存，使用乐观锁保证并发安全
-	DeductStock(ctx context.Context, id int64, quantity int) (int, error)
+	// DeductStock 扣减库存，使用乐观锁保证并发安全，返回新库存和新版本号
+	DeductStock(ctx context.Context, id int64, quantity int, version int) (int, int, error)
 	// RestoreStock 回补库存
 	RestoreStock(ctx context.Context, id int64, quantity int) (int, error)
 }
@@ -118,15 +120,15 @@ func (uc *SkuUseCase) Delete(ctx context.Context, id int64) error {
 }
 
 // DeductStock 扣减库存，含参数校验
-func (uc *SkuUseCase) DeductStock(ctx context.Context, id int64, quantity int) (int, error) {
+func (uc *SkuUseCase) DeductStock(ctx context.Context, id int64, quantity int, version int) (int, int, error) {
 	if id <= 0 {
-		return 0, ErrSkuNotFound
+		return 0, 0, ErrSkuNotFound
 	}
 	if quantity <= 0 {
-		return 0, errors.BadRequest("SKU_QUANTITY_INVALID", "扣减数量必须大于0")
+		return 0, 0, errors.BadRequest("SKU_QUANTITY_INVALID", "扣减数量必须大于0")
 	}
-	uc.log.WithContext(ctx).Infof("DeductStock: id=%d, quantity=%d", id, quantity)
-	return uc.repo.DeductStock(ctx, id, quantity)
+	uc.log.WithContext(ctx).Infof("DeductStock: id=%d, quantity=%d, version=%d", id, quantity, version)
+	return uc.repo.DeductStock(ctx, id, quantity, version)
 }
 
 // RestoreStock 回补库存，含参数校验

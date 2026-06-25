@@ -34,6 +34,7 @@ type SkuInfo struct {
 	ImgUrl        string                 `protobuf:"bytes,7,opt,name=img_url,json=imgUrl,proto3" json:"img_url,omitempty"` // SKU主图
 	CreatedAt     string                 `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     string                 `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Version       int64                  `protobuf:"varint,10,opt,name=version,proto3" json:"version,omitempty"` // 版本号（乐观锁）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -129,6 +130,13 @@ func (x *SkuInfo) GetUpdatedAt() string {
 		return x.UpdatedAt
 	}
 	return ""
+}
+
+func (x *SkuInfo) GetVersion() int64 {
+	if x != nil {
+		return x.Version
+	}
+	return 0
 }
 
 // 创建SKU
@@ -709,6 +717,7 @@ type DeductStockRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Quantity      int64                  `protobuf:"varint,2,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	Version       int64                  `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"` // 当前版本号，用于乐观锁
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -757,10 +766,18 @@ func (x *DeductStockRequest) GetQuantity() int64 {
 	return 0
 }
 
+func (x *DeductStockRequest) GetVersion() int64 {
+	if x != nil {
+		return x.Version
+	}
+	return 0
+}
+
 type DeductStockResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	NewStock      int64                  `protobuf:"varint,2,opt,name=new_stock,json=newStock,proto3" json:"new_stock,omitempty"`
+	NewVersion    int64                  `protobuf:"varint,3,opt,name=new_version,json=newVersion,proto3" json:"new_version,omitempty"` // 新版本号
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -805,6 +822,13 @@ func (x *DeductStockResponse) GetSuccess() bool {
 func (x *DeductStockResponse) GetNewStock() int64 {
 	if x != nil {
 		return x.NewStock
+	}
+	return 0
+}
+
+func (x *DeductStockResponse) GetNewVersion() int64 {
+	if x != nil {
+		return x.NewVersion
 	}
 	return 0
 }
@@ -918,7 +942,7 @@ var File_sku_v1_sku_proto protoreflect.FileDescriptor
 
 const file_sku_v1_sku_proto_rawDesc = "" +
 	"\n" +
-	"\x10sku/v1/sku.proto\x12\x06sku.v1\x1a\x1cgoogle/api/annotations.proto\"\xe3\x01\n" +
+	"\x10sku/v1/sku.proto\x12\x06sku.v1\x1a\x1cgoogle/api/annotations.proto\"\xfd\x01\n" +
 	"\aSkuInfo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1d\n" +
 	"\n" +
@@ -931,7 +955,9 @@ const file_sku_v1_sku_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\b \x01(\tR\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\tR\tupdatedAt\"\x9e\x01\n" +
+	"updated_at\x18\t \x01(\tR\tupdatedAt\x12\x18\n" +
+	"\aversion\x18\n" +
+	" \x01(\x03R\aversion\"\x9e\x01\n" +
 	"\x10CreateSkuRequest\x12\x1d\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\x03R\tproductId\x12\x10\n" +
@@ -970,13 +996,16 @@ const file_sku_v1_sku_proto_rawDesc = "" +
 	"\x10DeleteSkuRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"-\n" +
 	"\x11DeleteSkuResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"@\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"Z\n" +
 	"\x12DeductStockRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
-	"\bquantity\x18\x02 \x01(\x03R\bquantity\"L\n" +
+	"\bquantity\x18\x02 \x01(\x03R\bquantity\x12\x18\n" +
+	"\aversion\x18\x03 \x01(\x03R\aversion\"m\n" +
 	"\x13DeductStockResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1b\n" +
-	"\tnew_stock\x18\x02 \x01(\x03R\bnewStock\"A\n" +
+	"\tnew_stock\x18\x02 \x01(\x03R\bnewStock\x12\x1f\n" +
+	"\vnew_version\x18\x03 \x01(\x03R\n" +
+	"newVersion\"A\n" +
 	"\x13RestoreStockRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
 	"\bquantity\x18\x02 \x01(\x03R\bquantity\"M\n" +

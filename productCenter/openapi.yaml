@@ -996,6 +996,8 @@ components:
                     type: string
                 quantity:
                     type: string
+                version:
+                    type: string
             description: 扣减库存
         sku.v1.DeductStockResponse:
             type: object
@@ -1003,6 +1005,8 @@ components:
                 success:
                     type: boolean
                 newStock:
+                    type: string
+                newVersion:
                     type: string
         sku.v1.DeleteSkuResponse:
             type: object
@@ -1065,6 +1069,8 @@ components:
                 createdAt:
                     type: string
                 updatedAt:
+                    type: string
+                version:
                     type: string
             description: SKU实体
         sku.v1.UpdateSkuRequest:

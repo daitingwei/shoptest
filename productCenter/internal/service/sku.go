@@ -90,11 +90,11 @@ func (s *SkuService) DeleteSku(ctx context.Context, req *v1.DeleteSkuRequest) (*
 
 // DeductStock 扣减库存
 func (s *SkuService) DeductStock(ctx context.Context, req *v1.DeductStockRequest) (*v1.DeductStockResponse, error) {
-	newStock, err := s.uc.DeductStock(ctx, req.Id, int(req.Quantity))
+	newStock, newVersion, err := s.uc.DeductStock(ctx, req.Id, int(req.Quantity), int(req.Version))
 	if err != nil {
 		return nil, err
 	}
-	return &v1.DeductStockResponse{Success: true, NewStock: int64(newStock)}, nil
+	return &v1.DeductStockResponse{Success: true, NewStock: int64(newStock), NewVersion: int64(newVersion)}, nil
 }
 
 // RestoreStock 回补库存
@@ -119,6 +119,7 @@ func skuEntityToProto(sku *biz.Sku) *v1.SkuInfo {
 		Price:     int64(sku.Price),
 		Stock:     int64(sku.Stock),
 		ImgUrl:    sku.ImgURL,
+		Version:   int64(sku.Version),
 		CreatedAt: sku.CreatedAt.Format("2006-01-02 15:04:05"),
 		UpdatedAt: sku.UpdatedAt.Format("2006-01-02 15:04:05"),
 	}

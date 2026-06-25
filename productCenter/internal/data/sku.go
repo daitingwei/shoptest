@@ -120,24 +120,24 @@ func (r *skuRepo) Delete(ctx context.Context, id int64) error {
 	return r.data.db.WithContext(ctx).Delete(&Sku{}, id).Error
 }
 
-// DeductStock 使用乐观锁扣减库存
-func (r *skuRepo) DeductStock(ctx context.Context, id int64, quantity int) (int, error) {
+// DeductStock 使用版本号乐观锁扣减库存，返回新库存和新版本号
+func (r *skuRepo) DeductStock(ctx context.Context, id int64, quantity int, version int) (int, int, error) {
 	result := r.data.db.WithContext(ctx).Exec(
-		"UPDATE sku SET stock = stock - ? WHERE id = ? AND stock >= ?",
-		quantity, id, quantity,
+		"UPDATE sku SET stock = stock - ?, version = version + 1 WHERE id = ? AND version = ? AND stock >= ?",
+		quantity, id, version, quantity,
 	)
 	if result.Error != nil {
-		return 0, result.Error
+		return 0, 0, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return 0, biz.ErrSkuStockInsufficient
+		return 0, 0, biz.ErrSkuVersionConflict
 	}
 
-	var stock int
-	if err := r.data.db.WithContext(ctx).Model(&Sku{}).Where("id = ?", id).Select("stock").Scan(&stock).Error; err != nil {
-		return 0, err
+	var stock, newVersion int
+	if err := r.data.db.WithContext(ctx).Model(&Sku{}).Where("id = ?", id).Select("stock", "version").Row().Scan(&stock, &newVersion); err != nil {
+		return 0, 0, err
 	}
-	return stock, nil
+	return stock, newVersion, nil
 }
 
 // RestoreStock 回补库存

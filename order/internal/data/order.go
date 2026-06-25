@@ -165,20 +165,26 @@ func (r *OrderRepo) CancelOrder(ctx context.Context, orderID int64) error {
 	})
 }
 
-// DeductStock 通过gRPC调用ProductCenter扣减库存
+// DeductStock 通过gRPC调用ProductCenter扣减库存，带版本号乐观锁重试
 func (r *OrderRepo) DeductStock(ctx context.Context, skuID int64, quantity int) error {
 	skuClient := skuv1.NewSkuClient(r.data.pcConn)
-	resp, err := skuClient.DeductStock(ctx, &skuv1.DeductStockRequest{
-		Id:       skuID,
-		Quantity: int64(quantity),
-	})
-	if err != nil {
-		return err
+
+	for retry := 0; retry < 3; retry++ {
+		skuResp, err := skuClient.GetSku(ctx, &skuv1.GetSkuRequest{Id: skuID})
+		if err != nil {
+			return err
+		}
+
+		resp, err := skuClient.DeductStock(ctx, &skuv1.DeductStockRequest{
+			Id:       skuID,
+			Quantity: int64(quantity),
+			Version:  skuResp.Sku.Version,
+		})
+		if err == nil && resp.Success {
+			return nil
+		}
 	}
-	if !resp.Success {
-		return biz.ErrInsufficientStock
-	}
-	return nil
+	return biz.ErrInsufficientStock
 }
 
 // RestoreStock 通过gRPC调用ProductCenter回补库存

@@ -86,6 +86,7 @@ type Sku struct {
 	Title     string         `gorm:"column:title;type:varchar(100)" json:"title"`
 	Price     int            `gorm:"column:price;type:int;default:0" json:"price"`
 	Stock     int            `gorm:"column:stock;type:int;default:0" json:"stock"`
+	Version   int            `gorm:"column:version;type:int;not null;default:0" json:"version"`
 	ImgURL    string         `gorm:"column:img_url;type:varchar(500)" json:"img_url"`
 	CreatedAt time.Time      `gorm:"column:created_at" json:"created_at"`
 	UpdatedAt time.Time      `gorm:"column:updated_at" json:"updated_at"`
