@@ -99,7 +99,7 @@ func main() {
 	}
 	r := nacosRegistry.New(nacosClient)
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Registry, logger, r)
+	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Registry, logger, r, r)
 	if err != nil {
 		panic(err)
 	}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	v1 "order/api/order/v1"
+	"github.com/go-kratos/kratos/v2/errors"
 )
 
 // OrderRepo 订单数据仓库接口，由 data 层实现
@@ -17,7 +18,14 @@ type OrderRepo interface {
 	ListOrders(ctx context.Context, userID int64, page, pageSize int, status OrderStatus) ([]*Order, int32, error)
 	UpdateOrderStatus(ctx context.Context, orderID int64, status OrderStatus) error
 	CancelOrder(ctx context.Context, orderID int64) error
+	// DeductStock 扣减库存，调用ProductCenter gRPC
+	DeductStock(ctx context.Context, skuID int64, quantity int) error
+	// RestoreStock 回补库存，调用ProductCenter gRPC
+	RestoreStock(ctx context.Context, skuID int64, quantity int) error
 }
+
+// ErrInsufficientStock 库存不足错误
+var ErrInsufficientStock = errors.New(404, "INSUFFICIENT_STOCK", "库存不足")
 
 // OrderUseCase 订单业务用例
 type OrderUseCase struct {

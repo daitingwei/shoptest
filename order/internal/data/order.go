@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"order/internal/biz"
+	skuv1 "productCenter/api/sku/v1"
 	"gorm.io/gorm"
 )
 
@@ -17,7 +18,7 @@ func NewOrderRepo(data *Data) biz.OrderRepo {
 	return &OrderRepo{data: data}
 }
 
-// CreateOrder 在事务中创建订单及订单项
+// CreateOrder 在事务中创建订单及订单项，并扣减库存
 func (r *OrderRepo) CreateOrder(ctx context.Context, order *biz.Order) (*biz.Order, error) {
 	order.OrderNo = generateOrderNo()
 
@@ -48,6 +49,10 @@ func (r *OrderRepo) CreateOrder(ctx context.Context, order *biz.Order) (*biz.Ord
 				ImageURL:    item.ImageURL,
 			}
 			if err := tx.Create(orderItemModel).Error; err != nil {
+				return err
+			}
+
+			if err := r.DeductStock(ctx, item.SKUID, item.Quantity); err != nil {
 				return err
 			}
 		}
@@ -144,9 +149,50 @@ func (r *OrderRepo) UpdateOrderStatus(ctx context.Context, orderID int64, status
 	return r.data.db.Model(&Order{}).Where("id = ?", orderID).Updates(updates).Error
 }
 
-// CancelOrder 取消订单
+// CancelOrder 取消订单并在事务中回补库存
 func (r *OrderRepo) CancelOrder(ctx context.Context, orderID int64) error {
-	return r.data.db.Model(&Order{}).Where("id = ? AND status = ?", orderID, biz.OrderStatusPending).Update("status", biz.OrderStatusCancelled).Error
+	return r.data.db.Transaction(func(tx *gorm.DB) error {
+		var items []OrderItem
+		if err := tx.Where("order_id = ?", orderID).Find(&items).Error; err != nil {
+			return err
+		}
+		for _, item := range items {
+			if err := r.RestoreStock(ctx, item.SKUID, item.Quantity); err != nil {
+				return err
+			}
+		}
+		return tx.Model(&Order{}).Where("id = ? AND status = ?", orderID, biz.OrderStatusPending).Update("status", biz.OrderStatusCancelled).Error
+	})
+}
+
+// DeductStock 通过gRPC调用ProductCenter扣减库存
+func (r *OrderRepo) DeductStock(ctx context.Context, skuID int64, quantity int) error {
+	resp, err := r.data.skuClient.DeductStock(ctx, &skuv1.DeductStockRequest{
+		Id:       skuID,
+		Quantity: int64(quantity),
+	})
+	if err != nil {
+		return err
+	}
+	if !resp.Success {
+		return biz.ErrInsufficientStock
+	}
+	return nil
+}
+
+// RestoreStock 通过gRPC调用ProductCenter回补库存
+func (r *OrderRepo) RestoreStock(ctx context.Context, skuID int64, quantity int) error {
+	resp, err := r.data.skuClient.RestoreStock(ctx, &skuv1.RestoreStockRequest{
+		Id:       skuID,
+		Quantity: int64(quantity),
+	})
+	if err != nil {
+		return err
+	}
+	if !resp.Success {
+		return err
+	}
+	return nil
 }
 
 // convertOrderToBiz 将 data 层 Order 模型转换为 biz 层 Order 实体
