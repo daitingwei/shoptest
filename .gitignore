@@ -1,0 +1,36 @@
+# IDE configurations
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# System files
+.DS_Store
+Thumbs.db
+
+# TRAE tool directory (keep documents)
+.trae/*
+!.trae/documents/
+!.trae/documents/**
+
+# Build artifacts
+bin/
+*.exe
+*.dll
+*.so
+
+# Go specific
+go.sum
+vendor/
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+*.tmp
+
+# Local configurations
+configs/local.yaml
+.env
+.local.*
