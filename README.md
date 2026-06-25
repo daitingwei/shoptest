@@ -1,26 +1,49 @@
-# 商品中心（Product Center）
+# ShopTest 微服务电商系统
 
-基于 Go + Kratos 框架实现的极简商品管理后端，支持店铺、商品、标签的完整 CRUD。
+基于 Go + Kratos v2 + Nacos 的微服务电商系统，包含商品中心、订单服务、BFF 聚合层三个独立服务。
 
 ## 项目结构
 
 ```
 shpotest/
-├── procenter/              # Kratos 微服务版（主力版本）
+├── productCenter/          # 商品中心服务（端口 gRPC:9000 HTTP:8000）
 │   ├── api/                # Proto 定义 + 生成代码
-│   │   ├── shop/v1/        # 店铺接口
 │   │   ├── product/v1/     # 商品接口
+│   │   ├── shop/v1/        # 店铺接口
+│   │   ├── sku/v1/         # SKU + 库存扣减接口
 │   │   ├── producttag/v1/  # 标签接口
-│   │   └── bff/v1/         # BFF 聚合接口（商品详情 + 店铺首页）
-│   ├── cmd/procenter/      # 程序入口 + Wire 依赖注入
-│   ├── configs/            # 配置文件（YAML）
+│   │   └── productmedia/v1/# 商品副图接口
+│   ├── cmd/productcenter/  # 程序入口 + Wire
+│   ├── configs/            # 配置文件
 │   └── internal/
 │       ├── biz/            # 业务层：实体 + UseCase + Repo 接口
 │       ├── data/           # 数据层：GORM 模型 + Repo 实现
 │       ├── service/        # 服务层：Proto → Biz 适配
 │       └── server/         # gRPC + HTTP 服务器
+│
+├── order/                  # 订单服务（端口 gRPC:9001 HTTP:8001）
+│   ├── api/order/v1/       # 订单接口
+│   ├── cmd/order/          # 程序入口 + Wire
+│   ├── configs/            # 配置文件
+│   └── internal/
+│       ├── biz/            # 业务层：幂等创建、状态流转、实体定义
+│       ├── data/           # 数据层：MySQL + Redis + gRPC client
+│       ├── service/        # 服务层：Proto → Biz 适配
+│       └── server/         # gRPC + HTTP 服务器
+│
+├── bff/                    # BFF 聚合层（端口 gRPC:9002 HTTP:8002）
+│   ├── api/bff/v1/         # BFF 聚合接口
+│   ├── cmd/bff/            # 程序入口 + Wire
+│   ├── configs/            # 配置文件
+│   └── internal/
+│       ├── biz/            # 业务层：请求聚合 + request_id 生成
+│       ├── data/           # 数据层：gRPC client 连接管理
+│       ├── service/        # 服务层：Proto → Biz 适配
+│       └── server/         # gRPC + HTTP 服务器
+│
 ├── schema.sql              # 数据库建表 DDL
-└── 库表设计.md              # 数据库设计文档
+├── 库表设计.md              # 数据库设计文档
+└── docker-compose.yml      # MySQL + Redis + Nacos 开发环境
 ```
 
 ## 技术栈
@@ -29,163 +52,117 @@ shpotest/
 |---|---|
 | 语言 | Go 1.22 |
 | 框架 | [Kratos](https://go-kratos.dev/) v2 |
-| RPC/API | Protobuf + gRPC + HTTP（基于 proto annotation 自动生成） |
+| RPC/API | Protobuf + gRPC + HTTP（proto annotation 自动生成） |
 | ORM | GORM |
 | 数据库 | MySQL 8.0+ |
+| 缓存 | Redis |
+| 服务注册/发现 | Nacos |
 | 依赖注入 | Google Wire |
+| 幂等性 | Redis SET NX + DB 唯一索引（request_id） |
+| 乐观锁 | MySQL 版本号（version 字段） |
+
+## 服务概览
+
+| 服务 | gRPC | HTTP | 职责 |
+|---|---|---|---|
+| productCenter | 9000 | 8000 | 店铺、商品、标签、SKU、副图 CRUD + 库存扣减/回补 |
+| order | 9001 | 8001 | 订单创建（幂等 + 锁库存）、查询、状态管理、取消 |
+| bff | 9002 | 8002 | 面向前端的聚合层：商品详情、订单创建（自动生成 request_id） |
 
 ## 核心功能
 
-### 1. 店铺管理（Shops）
-- 创建店铺
-- 查询店铺详情
-- 分页查询店铺列表
-- 更新店铺信息
-- 软删除店铺
+### 1. 商品中心（productCenter）
 
-### 2. 商品管理（Products）
-- 创建商品（校验所属店铺必须存在）
-- 查询商品详情（含店铺名称）
-- 分页查询商品列表（含店铺名称，支持按店铺/状态筛选）
-- 更新商品信息（支持部分字段更新）
-- 软删除商品
+- 店铺/商品/标签/副图 CRUD
+- SKU 管理 + 库存扣减（版本号乐观锁）
+- 库存回补
 
-### 3. 商品标签（Product Tags）
-- 创建标签
-- 标签列表
-- 商品 ↔ 标签（多对多关联，通过中间表 `product_tag_mapping`）
+### 2. 订单服务（order）
 
-### 4. BFF 聚合层
-- 商品详情页（聚合商品信息 + 店铺名 + 标签 + SKU + 副图）
-- 商品列表页（聚合商品 + 店铺名 + 标签）
-- 店铺首页（聚合店铺信息 + 商品列表）
+- 创建订单：三级幂等保护（Redis SET NX → DB 查询 → request_id 唯一索引）+ 锁定库存
+- 取消订单：回补库存
+- 订单查询、列表、状态流转
+
+### 3. BFF 聚合层（bff）
+
+- 商品详情页（聚合商品 + 店铺 + 标签 + SKU + 副图）
+- 商品列表页（商品 + 店铺名 + 标签）
+- 店铺首页（店铺信息 + 商品列表）
+- 创建订单（自动生成 request_id，前端无感知幂等）
+
+## 订单创建完整链路
+
+```
+前端 → POST /api/v1/bff/orders {user_id, shop_id, items}
+  │
+  ├─ BFF Biz: requestID = uuid.NewString()
+  ├─ BFF Repo: gRPC → Order.CreateOrder(requestID, ...)
+  │     │
+  │     ├─ Redis SET NX + DB 查询 → 幂等判断
+  │     │
+  │     ├─ for each item:
+  │     │   ├─ GetSku(skuID) → 获取当前 version
+  │     │   └─ DeductStock(skuID, quantity, version)
+  │     │       ├─ SQL: UPDATE sku SET stock=stock-?,
+  │     │       │         version=version+1
+  │     │       │         WHERE id=? AND version=? AND stock>=?
+  │     │       ├─ 版本匹配 → 扣减成功
+  │     │       └─ 版本冲突 → 重试（最多3次）
+  │     │
+  │     └─ 创建订单 + 订单项
+  │
+  └─ 返回 {order_id, order_no}
+```
 
 ## 数据库设计
 
 ### 表结构概览
 
-| 表名 | 说明 | 关键字段 |
+| 表名 | 所属服务 | 说明 |
 |---|---|---|
-| `shops` | 店铺表 | id, shop_name, description, created_at, updated_at, deleted_at |
-| `product_tag` | 商品标签表 | id, name, sort, created_at, updated_at, deleted_at |
-| `products` | 商品表 | id, shop_id, name, description, main_image_url, price, compare_at_price, status, sort, created_at, updated_at, deleted_at |
-| `product_tag_mapping` | 商品-标签关联表（多对多） | product_id, tag_id |
-| `product_media` | 商品副图表 | id, product_id, url, sort, created_at, updated_at, deleted_at |
-| `sku` | 商品 SKU 表 | id, product_id, sku, title, price, stock, img_url, created_at, updated_at, deleted_at |
+| `shops` | productCenter | 店铺表 |
+| `products` | productCenter | 商品表 |
+| `product_tag` | productCenter | 商品标签表 |
+| `product_tag_mapping` | productCenter | 商品-标签关联表 |
+| `product_media` | productCenter | 商品副图表 |
+| `sku` | productCenter | SKU 表（含 version 乐观锁字段） |
+| `orders` | order | 订单表（含 request_id 唯一索引） |
+| `order_items` | order | 订单项表 |
 
-### ER 关系
+### SKU 版本号乐观锁
 
-```
-shops ──┬──1:N── products
-        │          ├──1:N── product_media
-        │          ├──1:N── sku
-        │          └──N:M── product_tag_mapping ── product_tag
-        │
-product_tag ──┘
-```
+```sql
+-- sku 表
+CREATE TABLE sku (
+    ...
+    stock   INT NOT NULL DEFAULT 0,
+    version INT NOT NULL DEFAULT 0,  -- 乐观锁版本号
+    ...
+);
 
-### 设计要点
-
-1. **价格用 int 存分**：避免浮点精度丢失（DECIMAL 虽好但 ORM 开销大，int 存分更简单直接）
-2. **软删除**：`deleted_at` 字段，误删可恢复，有回收站概念
-3. **商品状态**：`0=草稿` / `1=上架` / `2=下架`（tinyint，省空间）
-4. **联合索引**：`products(shop_id, status)` 支持按店铺 + 状态快速筛选
-5. **逻辑外键**：不在 DB 层建物理外键，由应用层保证数据一致性（更灵活，方便 shard）
-
-详见 [库表设计.md](./库表设计.md) 和 [schema.sql](./schema.sql)。
-
-## 分层架构
-
-```
-┌─────────────────────────────────────────────┐
-│                  Client                     │
-│    (HTTP / gRPC / curl / Postman)           │
-└──────────────────┬──────────────────────────┘
-                   │ HTTP / gRPC 请求
-                   ▼
-┌─────────────────────────────────────────────┐
-│               internal/server               │
-│   ├── NewGRPCServer  (gRPC 路由注册)        │
-│   └── NewHTTPServer (HTTP 路由注册)         │
-└──────────────────┬──────────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────────┐
-│              internal/service               │
-│   ShopService      解析 proto 请求          │
-│   ProductService   参数校验                 │
-│   ProductTagService 拼装 proto 响应         │
-│   BFFService       调用 biz UseCase         │
-└──────────────────┬──────────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────────┐
-│                 internal/biz                │
-│   ├── ShopUseCase        (店铺业务逻辑)     │
-│   ├── ProductUseCase     (商品业务逻辑)     │
-│   ├── ProductTagUseCase  (标签业务逻辑)     │
-│   ├── BFFUseCase         (数据聚合)         │
-│   ├── entity.go          (业务实体定义)     │
-│   └── *Repo              (接口定义, 而非实现)│
-└──────────────────┬──────────────────────────┘
-                   │ 依赖倒置（面向接口编程）
-                   ▼
-┌─────────────────────────────────────────────┐
-│                internal/data                │
-│   ├── shop.go          (ShopRepo 实现)      │
-│   ├── product.go       (ProductRepo 实现)   │
-│   ├── product_tag.go   (ProductTagRepo 实现)│
-│   ├── bff.go           (BFFRepo 实现)       │
-│   ├── product_media.go (ProductMediaRepo)   │
-│   ├── sku.go           (SkuRepo 实现)       │
-│   ├── model.go         (GORM 模型)         │
-│   └── data.go          (DB 连接 + AutoMigrate)│
-└──────────────────┬──────────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────────┐
-│                    MySQL                    │
-└─────────────────────────────────────────────┘
+-- 扣减 SQL（核心保护）
+UPDATE sku
+SET stock = stock - ?, version = version + 1
+WHERE id = ? AND version = ? AND stock >= ?;
 ```
 
-**分层的价值**：
-- `biz` 层定义接口，`data` 层负责实现 → 换数据库只需改 `data`，`biz` 不动
-- `service` 层只做协议转换 → 业务逻辑集中在 `biz`，便于测试
-- Wire 自动生成依赖注入代码 → 无需手动层层 New
+`WHERE version = ?` 保证并发安全：读到的版本号和更新时不一致则失败重试。
+
+### 订单幂等
+
+```sql
+-- orders 表
+CREATE TABLE orders (
+    ...
+    request_id VARCHAR(64) NOT NULL,
+    UNIQUE INDEX idx_request_id (request_id),  -- 幂等兜底
+    ...
+);
+```
+
+三层保护：Redis SET NX（快速判断）→ DB 查询（兜底）→ 唯一索引（最终防线）。
 
 ## HTTP API
-
-所有接口均支持 HTTP（JSON）。路由由 proto annotation 自动生成。
-
-### 店铺相关
-
-| Method | Path | 说明 |
-|---|---|---|
-| POST | `/api/v1/shops` | 创建店铺 |
-| GET | `/api/v1/shops/{id}` | 获取店铺详情 |
-| GET | `/api/v1/shops` | 店铺列表 |
-| PUT | `/api/v1/shops/{id}` | 更新店铺 |
-| DELETE | `/api/v1/shops/{id}` | 删除店铺 |
-
-### 商品相关
-
-| Method | Path | 说明 |
-|---|---|---|
-| POST | `/api/v1/products` | 创建商品 |
-| GET | `/api/v1/products/{id}` | 获取商品详情（含店铺名称） |
-| GET | `/api/v1/products` | 商品列表（支持 `page`, `page_size`, `shop_id`, `status` 查询参数） |
-| PUT | `/api/v1/products/{id}` | 更新商品 |
-| DELETE | `/api/v1/products/{id}` | 删除商品 |
-
-### 标签相关
-
-| Method | Path | 说明 |
-|---|---|---|
-| POST | `/api/v1/product-tags` | 创建标签 |
-| GET | `/api/v1/product-tags/{id}` | 获取标签详情 |
-| GET | `/api/v1/product-tags` | 标签列表 |
-| PUT | `/api/v1/product-tags/{id}` | 更新标签 |
-| DELETE | `/api/v1/product-tags/{id}` | 删除标签 |
 
 ### BFF 聚合接口
 
@@ -194,34 +171,59 @@ product_tag ──┘
 | GET | `/api/v1/bff/products/{id}` | 商品详情页（商品 + 店铺 + 标签 + SKU + 副图） |
 | GET | `/api/v1/bff/products` | 商品列表页（商品 + 店铺名 + 标签） |
 | GET | `/api/v1/bff/shops/{id}` | 店铺首页（店铺信息 + 商品列表） |
+| POST | `/api/v1/bff/orders` | 创建订单 |
+
+### 订单相关
+
+| Method | Path | 说明 |
+|---|---|---|
+| POST | `/api/v1/orders` | 创建订单 |
+| GET | `/api/v1/orders/{order_id}` | 获取订单详情 |
+| GET | `/api/v1/orders` | 订单列表 |
+| PUT | `/api/v1/orders/{order_id}/status` | 更新订单状态 |
+| DELETE | `/api/v1/orders/{order_id}` | 取消订单 |
+
+### 商品中心相关
+
+productCenter 的店铺、商品、标签、SKU、副图接口见各 proto 文件定义。
 
 ## 快速开始
 
 ### 前置条件
 
 - Go 1.22+
-- MySQL 8.0+ （端口 3309，用户名 root，密码见配置）
+- Docker & Docker Compose
+- MySQL 8.0+（端口 3309）、Redis（端口 6379）、Nacos（端口 8848）
 
-### 步骤 1：创建数据库
+### 步骤 1：启动基础设施
+
+```bash
+docker-compose up -d
+```
+
+### 步骤 2：初始化数据库
 
 ```bash
 mysql -h 127.0.0.1 -P 3309 -u root -p -e "CREATE DATABASE IF NOT EXISTS shpotest DEFAULT CHARSET utf8mb4;"
+mysql -h 127.0.0.1 -P 3309 -u root -p shpotest < schema.sql
 ```
 
-### 步骤 2：编译并运行
+### 步骤 3：启动服务
 
 ```bash
-cd procenter
-go build -o ./bin/server ./cmd/procenter/
-./bin/server -conf ./configs
+# 终端 1：商品中心
+cd productCenter && go run ./cmd/productcenter/ -conf ./configs
+
+# 终端 2：订单服务
+cd order && go run ./cmd/order/ -conf ./configs
+
+# 终端 3：BFF 聚合层
+cd bff && go run ./cmd/bff/ -conf ./configs
 ```
 
-服务启动后会自动：
-1. 连接 MySQL（`127.0.0.1:3309/shpotest`）
-2. 自动执行 `AutoMigrate` 创建/更新所有数据表
-3. 启动 HTTP 服务在 `:8000`，gRPC 服务在 `:9000`
+服务启动后会自动注册到 Nacos（`127.0.0.1:8848`），BFF 通过 Nacos 发现 productCenter 和 order。
 
-### 步骤 3：测试接口
+### 步骤 4：测试接口
 
 ```bash
 # 创建店铺
@@ -229,105 +231,84 @@ curl -X POST http://127.0.0.1:8000/api/v1/shops \
   -H "Content-Type: application/json" \
   -d '{"shop_name":"测试旗舰店","description":"这是一个测试店铺"}'
 
-# 创建商品（需要先有店铺）
+# 创建商品
 curl -X POST http://127.0.0.1:8000/api/v1/products \
   -H "Content-Type: application/json" \
-  -d '{
-    "shop_id": 1,
-    "name": "iPhone 15 Pro",
-    "description": "苹果旗舰手机",
-    "main_image_url": "https://example.com/iphone.jpg",
-    "price": 799900,
-    "compare_at_price": 899900,
-    "status": 1,
-    "sort": 10
-  }'
+  -d '{"shop_id":1,"name":"iPhone 15 Pro","main_image_url":"https://example.com/iphone.jpg","price":799900,"status":1}'
 
-# 查询商品列表
-curl "http://127.0.0.1:8000/api/v1/products?page=1&page_size=10&shop_id=1&status=1"
-
-# BFF 查询商品详情页
-curl "http://127.0.0.1:8000/api/v1/bff/products/1"
+# 创建订单（通过 BFF）
+curl -X POST http://127.0.0.1:8002/api/v1/bff/orders \
+  -H "Content-Type: application/json" \
+  -d '{"user_id":1,"shop_id":1,"items":[{"product_id":1,"sku_id":1,"product_name":"iPhone 15 Pro","price":799900,"quantity":1}]}'
 ```
 
-## 配置文件
+## 分层架构
 
-`procenter/configs/config.yaml`
-
-```yaml
-server:
-  http:
-    addr: 0.0.0.0:8000
-    timeout: 1s
-  grpc:
-    addr: 0.0.0.0:9000
-    timeout: 1s
-data:
-  database:
-    driver: mysql
-    source: root:dtw258989971@tcp(127.0.0.1:3309)/shpotest?parseTime=True&loc=Local
+```
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│  BFF Service │  │ Order Service│  │ProductCenter │
+│   (9002)     │  │   (9001)     │  │   (9000)     │
+└───┬────┬─────┘  └───┬────┬─────┘  └───┬────┬─────┘
+    │    │             │    │             │    │
+    │    └──gRPC──────→│    │             │    │
+    │                  │    └──gRPC──────→│    │
+    │                  │                  │    │
+    ▼                  ▼                  ▼    ▼
+┌───────┐         ┌──────────┐       ┌──────────┐
+│ Nacos │         │ Redis+DB │       │   MySQL  │
+└───────┘         └──────────┘       └──────────┘
 ```
 
-修改配置文件后重启服务即可，无需改代码。
+**分层的价值**：
 
-## Proto 代码生成（可选）
+- `biz` 层定义接口，`data` 层负责实现 → 换数据库只需改 `data`，`biz` 不动
+- `service` 层只做协议转换 → 业务逻辑集中在 `biz`，便于测试
+- Wire 自动生成依赖注入代码 → 无需手动层层 New
+- 跨服务 gRPC 调用在 data 层按需创建轻量 client → 连接在 `Data` 结构体启动时建好
+
+## Proto 代码生成
 
 如果修改了 `api/**/*.proto`，需要重新生成代码：
 
 ```bash
-# 安装 kratos 工具
-go install github.com/go-kratos/kratos/cmd/kratos/v2@latest
+# productCenter
+cd productCenter && make api
 
-# 在项目根目录执行
-make api
-```
+# order
+cd order && make api
 
-## Wire 依赖注入生成（可选）
-
-```bash
-# 安装 wire
-go install github.com/google/wire/cmd/wire@latest
-
-# 生成依赖注入代码
-cd cmd/procenter && wire
-```
-
-## 开发时常用命令
-
-```bash
-# 编译所有包
-go build ./...
-
-# 运行测试
-go test ./...
-
-# 直接运行（开发时推荐，无需编译）
-cd procenter && go run ./cmd/procenter/ -conf ./configs
+# bff
+cd bff && make api
 ```
 
 ## 关键设计决策记录
 
-### 1. 为什么价格用 int 存分而不是 DECIMAL？
-- 避免浮点精度丢失（0.1 在二进制中是无限循环小数）
-- int 比较简单，GORM 映射直接，无性能开销
-- 缺点：小数除法需注意舍入策略，但电商场景足够
+### 1. 为什么用版本号乐观锁而不是 SELECT FOR UPDATE？
 
-### 2. 为什么商品状态用 tinyint 而不是 VARCHAR？
-- tinyint 只有 1 字节，比 VARCHAR 省空间
-- 索引效率更高（整型比较远快于字符串）
-- 缺点：语义不直观，需要记住数字含义（0=草稿, 1=上架, 2=下架）
+- 乐观锁无锁等待，并发性能高
+- 库存扣减冲突率低，适合乐观锁
+- MySQL 默认隔离级别 REPEATABLE-READ 下，乐观锁更可控
 
-### 3. 为什么用软删除而不是硬删除？
-- 有回收站概念，误删可恢复
-- 方便审计追溯
-- 关联数据保留上下文
+### 2. 为什么订单需要三级幂等保护？
 
-### 4. 为什么 biz 层只定义 Repo 接口，由 data 层实现？
-- **依赖倒置**：业务层不依赖具体实现，换数据库/加缓存只需改 data 层
-- **可测试性**：单元测试时可以 mock repo，不需要连真实数据库
-- **解耦**：业务逻辑和存储技术选型独立演进
+- Redis SET NX：快速判断，异常降级不影响下单
+- DB 查询：Redis 不可用时的兜底
+- 唯一索引：最终的原子性保证（request_id UNIQUE）
 
-### 5. 为什么需要 BFF 层？
-- 前端一个页面可能需要多张表的数据（商品详情 = 商品 + 店铺 + 标签 + SKU + 副图）
-- 由后端聚合返回，减少前端网络请求
-- 如果某个接口只在前端某页使用，可以独立放在 BFF，不污染核心业务接口
+### 3. 为什么 BFF 自动生成 request_id？
+
+- 前端无感知，不需要管理幂等 Key
+- 降低前端接入复杂度
+- 可后续升级为前端传 `X-Idempotency-Key` header
+
+### 4. 为什么 gRPC 连接在 Data 结构体启动时建好？
+
+- 避免每次请求建连接的 TCP 握手开销
+- 与 DB 连接、Redis 连接的生命周期一致
+- Kratos discovery resolver 内置 watcher，下游实例变化自动更新
+
+### 5. 为什么价格用 int 存分？
+
+- 避免浮点精度丢失
+- 整型索引效率高于 DECIMAL
+- 电商场景足够

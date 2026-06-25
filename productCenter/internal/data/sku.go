@@ -75,6 +75,7 @@ func (r *skuRepo) Get(ctx context.Context, id int64) (*biz.Sku, error) {
 		Price:     po.Price,
 		Stock:     po.Stock,
 		ImgURL:    po.ImgURL,
+		Version:   po.Version,
 		CreatedAt: po.CreatedAt,
 		UpdatedAt: po.UpdatedAt,
 	}, nil
@@ -108,6 +109,7 @@ func (r *skuRepo) List(ctx context.Context, page, pageSize int32, productID int6
 			Price:     po.Price,
 			Stock:     po.Stock,
 			ImgURL:    po.ImgURL,
+			Version:   po.Version,
 			CreatedAt: po.CreatedAt,
 			UpdatedAt: po.UpdatedAt,
 		})
