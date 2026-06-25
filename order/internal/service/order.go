@@ -33,7 +33,7 @@ func (s *OrderService) CreateOrder(ctx context.Context, req *v1.CreateOrderReque
 		}
 	}
 
-	order, err := s.uc.CreateOrder(ctx, req.UserId, req.ShopId, items)
+	order, err := s.uc.CreateOrder(ctx, req.RequestId, req.UserId, req.ShopId, items)
 	if err != nil {
 		return nil, err
 	}

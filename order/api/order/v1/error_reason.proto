@@ -11,4 +11,5 @@ enum ErrorReason {
     ORDER_CREATE_FAILED = 3;
     INSUFFICIENT_STOCK = 4;
     PARAMETER_ERROR = 5;
+    DUPLICATE_REQUEST = 6;
 }

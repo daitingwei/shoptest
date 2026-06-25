@@ -8,6 +8,7 @@ import (
 
 type Order struct {
 	gorm.Model
+	RequestID   string      `gorm:"column:request_id;type:varchar(64);uniqueIndex;not null" json:"request_id"`
 	OrderNo     string      `gorm:"column:order_no;type:varchar(64);uniqueIndex;not null" json:"order_no"`
 	UserID      int64       `gorm:"column:user_id;type:bigint;not null;index" json:"user_id"`
 	ShopID      int64       `gorm:"column:shop_id;type:bigint;not null;index" json:"shop_id"`

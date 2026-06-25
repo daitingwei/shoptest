@@ -375,9 +375,10 @@ func (x *Order) GetCreatedAt() *timestamppb.Timestamp {
 
 type CreateOrderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	ShopId        int64                  `protobuf:"varint,2,opt,name=shop_id,json=shopId,proto3" json:"shop_id,omitempty"`
-	Items         []*OrderItem           `protobuf:"bytes,3,rep,name=items,proto3" json:"items,omitempty"`
+	RequestId     string                 `protobuf:"bytes,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	ShopId        int64                  `protobuf:"varint,3,opt,name=shop_id,json=shopId,proto3" json:"shop_id,omitempty"`
+	Items         []*OrderItem           `protobuf:"bytes,4,rep,name=items,proto3" json:"items,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -410,6 +411,13 @@ func (x *CreateOrderRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use CreateOrderRequest.ProtoReflect.Descriptor instead.
 func (*CreateOrderRequest) Descriptor() ([]byte, []int) {
 	return file_order_v1_order_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *CreateOrderRequest) GetRequestId() string {
+	if x != nil {
+		return x.RequestId
+	}
+	return ""
 }
 
 func (x *CreateOrderRequest) GetUserId() int64 {
@@ -908,11 +916,13 @@ const file_order_v1_order_proto_rawDesc = "" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\vconfirmTime\x12)\n" +
 	"\x05items\x18\v \x03(\v2\x13.order.v1.OrderItemR\x05items\x129\n" +
 	"\n" +
-	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"q\n" +
-	"\x12CreateOrderRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x17\n" +
-	"\ashop_id\x18\x02 \x01(\x03R\x06shopId\x12)\n" +
-	"\x05items\x18\x03 \x03(\v2\x13.order.v1.OrderItemR\x05items\"K\n" +
+	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x90\x01\n" +
+	"\x12CreateOrderRequest\x12\x1d\n" +
+	"\n" +
+	"request_id\x18\x01 \x01(\tR\trequestId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\x03R\x06userId\x12\x17\n" +
+	"\ashop_id\x18\x03 \x01(\x03R\x06shopId\x12)\n" +
+	"\x05items\x18\x04 \x03(\v2\x13.order.v1.OrderItemR\x05items\"K\n" +
 	"\x13CreateOrderResponse\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\x03R\aorderId\x12\x19\n" +
 	"\border_no\x18\x02 \x01(\tR\aorderNo\",\n" +

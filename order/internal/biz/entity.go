@@ -8,15 +8,16 @@ import (
 
 type Order struct {
 	gorm.Model
-	OrderNo     string      `json:"order_no"`
-	UserID      int64       `json:"user_id"`
-	ShopID      int64       `json:"shop_id"`
-	TotalAmount int         `json:"total_amount"`
-	Status      int         `json:"status"`
-	PayStatus   int         `json:"pay_status"`
-	PayTime     *time.Time  `json:"pay_time"`
-	ShipTime    *time.Time  `json:"ship_time"`
-	ConfirmTime *time.Time  `json:"confirm_time"`
+	RequestID   string       `json:"request_id"`
+	OrderNo     string       `json:"order_no"`
+	UserID      int64        `json:"user_id"`
+	ShopID      int64        `json:"shop_id"`
+	TotalAmount int          `json:"total_amount"`
+	Status      int          `json:"status"`
+	PayStatus   int          `json:"pay_status"`
+	PayTime     *time.Time   `json:"pay_time"`
+	ShipTime    *time.Time   `json:"ship_time"`
+	ConfirmTime *time.Time   `json:"confirm_time"`
 	Items       []*OrderItem `json:"items,omitempty"`
 }
 

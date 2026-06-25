@@ -30,6 +30,7 @@ const (
 	ErrorReason_ORDER_CREATE_FAILED  ErrorReason = 3
 	ErrorReason_INSUFFICIENT_STOCK   ErrorReason = 4
 	ErrorReason_PARAMETER_ERROR      ErrorReason = 5
+	ErrorReason_DUPLICATE_REQUEST    ErrorReason = 6
 )
 
 // Enum value maps for ErrorReason.
@@ -41,6 +42,7 @@ var (
 		3: "ORDER_CREATE_FAILED",
 		4: "INSUFFICIENT_STOCK",
 		5: "PARAMETER_ERROR",
+		6: "DUPLICATE_REQUEST",
 	}
 	ErrorReason_value = map[string]int32{
 		"ORDER_NOT_FOUND":      0,
@@ -49,6 +51,7 @@ var (
 		"ORDER_CREATE_FAILED":  3,
 		"INSUFFICIENT_STOCK":   4,
 		"PARAMETER_ERROR":      5,
+		"DUPLICATE_REQUEST":    6,
 	}
 )
 
@@ -83,14 +86,15 @@ var File_order_v1_error_reason_proto protoreflect.FileDescriptor
 
 const file_order_v1_error_reason_proto_rawDesc = "" +
 	"\n" +
-	"\x1border/v1/error_reason.proto\x12\border.v1*\x9b\x01\n" +
+	"\x1border/v1/error_reason.proto\x12\border.v1*\xb2\x01\n" +
 	"\vErrorReason\x12\x13\n" +
 	"\x0fORDER_NOT_FOUND\x10\x00\x12\x18\n" +
 	"\x14ORDER_STATUS_INVALID\x10\x01\x12\x17\n" +
 	"\x13ORDER_CANCEL_FAILED\x10\x02\x12\x17\n" +
 	"\x13ORDER_CREATE_FAILED\x10\x03\x12\x16\n" +
 	"\x12INSUFFICIENT_STOCK\x10\x04\x12\x13\n" +
-	"\x0fPARAMETER_ERROR\x10\x05B\x17Z\x15order/api/order/v1;v1b\x06proto3"
+	"\x0fPARAMETER_ERROR\x10\x05\x12\x15\n" +
+	"\x11DUPLICATE_REQUEST\x10\x06B\x17Z\x15order/api/order/v1;v1b\x06proto3"
 
 var (
 	file_order_v1_error_reason_proto_rawDescOnce sync.Once

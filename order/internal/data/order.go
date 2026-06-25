@@ -17,11 +17,13 @@ func NewOrderRepo(data *Data) biz.OrderRepo {
 	return &OrderRepo{data: data}
 }
 
+// CreateOrder 在事务中创建订单及订单项
 func (r *OrderRepo) CreateOrder(ctx context.Context, order *biz.Order) (*biz.Order, error) {
 	order.OrderNo = generateOrderNo()
 
 	err := r.data.db.Transaction(func(tx *gorm.DB) error {
 		orderModel := &Order{
+			RequestID:   order.RequestID,
 			OrderNo:     order.OrderNo,
 			UserID:      order.UserID,
 			ShopID:      order.ShopID,
@@ -61,6 +63,7 @@ func (r *OrderRepo) CreateOrder(ctx context.Context, order *biz.Order) (*biz.Ord
 	return order, nil
 }
 
+// GetOrder 根据订单ID获取订单
 func (r *OrderRepo) GetOrder(ctx context.Context, orderID int64) (*biz.Order, error) {
 	var orderModel Order
 	if err := r.data.db.Preload("Items").First(&orderModel, orderID).Error; err != nil {
@@ -70,6 +73,30 @@ func (r *OrderRepo) GetOrder(ctx context.Context, orderID int64) (*biz.Order, er
 	return convertOrderToBiz(&orderModel), nil
 }
 
+// GetOrderByRequestID 根据request_id查询订单，用于幂等性校验
+func (r *OrderRepo) GetOrderByRequestID(ctx context.Context, requestID string) (*biz.Order, error) {
+	var orderModel Order
+	if err := r.data.db.Preload("Items").Where("request_id = ?", requestID).First(&orderModel).Error; err != nil {
+		return nil, err
+	}
+	return convertOrderToBiz(&orderModel), nil
+}
+
+// IdempotentSetNX 使用Redis SET NX实现幂等性标记，24小时过期
+func (r *OrderRepo) IdempotentSetNX(ctx context.Context, requestID string) (bool, error) {
+	ok, err := r.data.rdb.SetNX(ctx, "order:idempotent:"+requestID, "1", 24*time.Hour).Result()
+	if err != nil {
+		return false, err
+	}
+	return ok, nil
+}
+
+// IdempotentDel 删除Redis中的幂等标记
+func (r *OrderRepo) IdempotentDel(ctx context.Context, requestID string) error {
+	return r.data.rdb.Del(ctx, "order:idempotent:"+requestID).Err()
+}
+
+// ListOrders 分页查询用户订单列表
 func (r *OrderRepo) ListOrders(ctx context.Context, userID int64, page, pageSize int, status biz.OrderStatus) ([]*biz.Order, int32, error) {
 	var orders []Order
 	var total int64
@@ -96,6 +123,7 @@ func (r *OrderRepo) ListOrders(ctx context.Context, userID int64, page, pageSize
 	return result, int32(total), nil
 }
 
+// UpdateOrderStatus 更新订单状态
 func (r *OrderRepo) UpdateOrderStatus(ctx context.Context, orderID int64, status biz.OrderStatus) error {
 	updates := map[string]interface{}{
 		"status": status,
@@ -116,16 +144,19 @@ func (r *OrderRepo) UpdateOrderStatus(ctx context.Context, orderID int64, status
 	return r.data.db.Model(&Order{}).Where("id = ?", orderID).Updates(updates).Error
 }
 
+// CancelOrder 取消订单
 func (r *OrderRepo) CancelOrder(ctx context.Context, orderID int64) error {
 	return r.data.db.Model(&Order{}).Where("id = ? AND status = ?", orderID, biz.OrderStatusPending).Update("status", biz.OrderStatusCancelled).Error
 }
 
+// convertOrderToBiz 将 data 层 Order 模型转换为 biz 层 Order 实体
 func convertOrderToBiz(orderModel *Order) *biz.Order {
 	if orderModel == nil {
 		return nil
 	}
 
 	order := &biz.Order{
+		RequestID:   orderModel.RequestID,
 		OrderNo:     orderModel.OrderNo,
 		UserID:      orderModel.UserID,
 		ShopID:      orderModel.ShopID,
@@ -156,6 +187,7 @@ func convertOrderToBiz(orderModel *Order) *biz.Order {
 	return order
 }
 
+// generateOrderNo 生成订单号
 func generateOrderNo() string {
 	now := time.Now()
 	return fmt.Sprintf("ORD%d%d%d%d%d%d%d",
