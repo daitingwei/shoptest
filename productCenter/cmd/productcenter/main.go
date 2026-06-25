@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
+	"time"
 
 	"productCenter/internal/conf"
 
@@ -55,6 +57,9 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, r registry.Regi
 
 func main() {
 	flag.Parse()
+	if Name == "" {
+		Name = "productCenter"
+	}
 	logger := log.With(log.NewStdLogger(os.Stdout),
 		"ts", log.DefaultTimestamp,
 		"caller", log.DefaultCaller,
@@ -86,7 +91,7 @@ func main() {
 	cc := constant.ClientConfig{
 		NamespaceId:         bc.Registry.Nacos.NamespaceId,
 		TimeoutMs:           uint64(bc.Registry.Nacos.TimeoutMs),
-		NotLoadCacheAtStart: true,
+		NotLoadCacheAtStart: false,
 		LogDir:              bc.Registry.Nacos.LogDir,
 		CacheDir:            bc.Registry.Nacos.CacheDir,
 	}
@@ -98,6 +103,21 @@ func main() {
 		panic(err)
 	}
 	r := nacosRegistry.New(nacosClient)
+
+	// 等待 Nacos 客户端就绪（轮询注册接口）
+	for i := 0; i < 30; i++ {
+		time.Sleep(time.Second)
+		if err := r.Register(context.Background(), &registry.ServiceInstance{
+			ID: id, Name: Name, Version: Version,
+			Endpoints: []string{"grpc://127.0.0.1:9003"},
+		}); err == nil {
+			_ = r.Deregister(context.Background(), &registry.ServiceInstance{
+				ID: id, Name: Name, Version: Version,
+				Endpoints: []string{"grpc://127.0.0.1:9003"},
+			})
+			break
+		}
+	}
 
 	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Registry, logger, r)
 	if err != nil {

@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"os"
+	"time"
 
 	"bff/internal/conf"
 
@@ -55,6 +56,9 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, r registry.Regi
 
 func main() {
 	flag.Parse()
+	if Name == "" {
+		Name = "bff"
+	}
 	logger := log.With(log.NewStdLogger(os.Stdout),
 		"ts", log.DefaultTimestamp,
 		"caller", log.DefaultCaller,
@@ -86,7 +90,7 @@ func main() {
 	cc := constant.ClientConfig{
 		NamespaceId:         bc.Registry.Nacos.NamespaceId,
 		TimeoutMs:           uint64(bc.Registry.Nacos.TimeoutMs),
-		NotLoadCacheAtStart: true,
+		NotLoadCacheAtStart: false,
 		LogDir:              bc.Registry.Nacos.LogDir,
 		CacheDir:            bc.Registry.Nacos.CacheDir,
 	}
@@ -98,6 +102,8 @@ func main() {
 		panic(err)
 	}
 	r := nacosRegistry.New(nacosClient)
+
+	time.Sleep(5 * time.Second)
 
 	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Registry, logger, r, r)
 	if err != nil {
