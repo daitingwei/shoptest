@@ -6,6 +6,7 @@ import (
 
 	"order/internal/conf"
 
+	nacosRegistry "github.com/go-kratos/kratos/contrib/registry/nacos/v2"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
@@ -17,7 +18,6 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/v2/clients"
 	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/v2/vo"
-	nacosRegistry "github.com/go-kratos/kratos/contrib/registry/nacos/v2"
 
 	_ "go.uber.org/automaxprocs"
 )
@@ -99,7 +99,7 @@ func main() {
 	}
 	r := nacosRegistry.New(nacosClient)
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Registry, logger, r, r)
+	app, cleanup, err := wireApp(bc.Server, bc.Data, logger, r, r)
 	if err != nil {
 		panic(err)
 	}

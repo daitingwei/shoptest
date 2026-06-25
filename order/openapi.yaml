@@ -124,6 +124,8 @@ components:
         order.v1.CreateOrderRequest:
             type: object
             properties:
+                requestId:
+                    type: string
                 userId:
                     type: string
                 shopId:
