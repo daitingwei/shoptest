@@ -1,0 +1,230 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: OrderService API
+    version: 0.0.1
+paths:
+    /api/v1/orders:
+        get:
+            tags:
+                - OrderService
+            operationId: OrderService_ListOrders
+            parameters:
+                - name: userId
+                  in: query
+                  schema:
+                    type: string
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: status
+                  in: query
+                  schema:
+                    type: integer
+                    format: enum
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/order.v1.ListOrdersResponse'
+        post:
+            tags:
+                - OrderService
+            operationId: OrderService_CreateOrder
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/order.v1.CreateOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/order.v1.CreateOrderResponse'
+    /api/v1/orders/{orderId}:
+        get:
+            tags:
+                - OrderService
+            operationId: OrderService_GetOrder
+            parameters:
+                - name: orderId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/order.v1.GetOrderResponse'
+        delete:
+            tags:
+                - OrderService
+            operationId: OrderService_CancelOrder
+            parameters:
+                - name: orderId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/order.v1.CancelOrderResponse'
+    /api/v1/orders/{orderId}/status:
+        put:
+            tags:
+                - OrderService
+            operationId: OrderService_UpdateOrderStatus
+            parameters:
+                - name: orderId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/order.v1.UpdateOrderStatusRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/order.v1.UpdateOrderStatusResponse'
+components:
+    schemas:
+        order.v1.CancelOrderResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        order.v1.CreateOrderRequest:
+            type: object
+            properties:
+                userId:
+                    type: string
+                shopId:
+                    type: string
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/order.v1.OrderItem'
+        order.v1.CreateOrderResponse:
+            type: object
+            properties:
+                orderId:
+                    type: string
+                orderNo:
+                    type: string
+        order.v1.GetOrderResponse:
+            type: object
+            properties:
+                order:
+                    $ref: '#/components/schemas/order.v1.Order'
+        order.v1.ListOrdersResponse:
+            type: object
+            properties:
+                orders:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/order.v1.Order'
+                total:
+                    type: integer
+                    format: int32
+        order.v1.Order:
+            type: object
+            properties:
+                id:
+                    type: string
+                orderNo:
+                    type: string
+                userId:
+                    type: string
+                shopId:
+                    type: string
+                totalAmount:
+                    type: integer
+                    format: int32
+                status:
+                    type: integer
+                    format: enum
+                payStatus:
+                    type: integer
+                    format: enum
+                payTime:
+                    type: string
+                    format: date-time
+                shipTime:
+                    type: string
+                    format: date-time
+                confirmTime:
+                    type: string
+                    format: date-time
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/order.v1.OrderItem'
+                createdAt:
+                    type: string
+                    format: date-time
+        order.v1.OrderItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                orderId:
+                    type: string
+                productId:
+                    type: string
+                skuId:
+                    type: string
+                productName:
+                    type: string
+                skuTitle:
+                    type: string
+                price:
+                    type: integer
+                    format: int32
+                quantity:
+                    type: integer
+                    format: int32
+                imageUrl:
+                    type: string
+        order.v1.UpdateOrderStatusRequest:
+            type: object
+            properties:
+                orderId:
+                    type: string
+                status:
+                    type: integer
+                    format: enum
+        order.v1.UpdateOrderStatusResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+tags:
+    - name: OrderService
