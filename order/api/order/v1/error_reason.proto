@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package order.v1;
+
+option go_package = "order/api/order/v1;v1";
+
+enum ErrorReason {
+    ORDER_NOT_FOUND = 0;
+    ORDER_STATUS_INVALID = 1;
+    ORDER_CANCEL_FAILED = 2;
+    ORDER_CREATE_FAILED = 3;
+    INSUFFICIENT_STOCK = 4;
+    PARAMETER_ERROR = 5;
+}

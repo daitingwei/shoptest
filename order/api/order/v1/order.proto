@@ -1,0 +1,133 @@
+syntax = "proto3";
+
+package order.v1;
+
+option go_package = "order/api/order/v1;v1";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+enum OrderStatus {
+    ORDER_STATUS_PENDING = 0;
+    ORDER_STATUS_PAID = 1;
+    ORDER_STATUS_SHIPPED = 2;
+    ORDER_STATUS_COMPLETED = 3;
+    ORDER_STATUS_CANCELLED = 4;
+}
+
+enum PayStatus {
+    PAY_STATUS_UNPAID = 0;
+    PAY_STATUS_PAID = 1;
+    PAY_STATUS_FAILED = 2;
+    PAY_STATUS_REFUNDING = 3;
+    PAY_STATUS_REFUNDED = 4;
+}
+
+message OrderItem {
+    int64 id = 1;
+    int64 order_id = 2;
+    int64 product_id = 3;
+    int64 sku_id = 4;
+    string product_name = 5;
+    string sku_title = 6;
+    int32 price = 7;
+    int32 quantity = 8;
+    string image_url = 9;
+}
+
+message Order {
+    int64 id = 1;
+    string order_no = 2;
+    int64 user_id = 3;
+    int64 shop_id = 4;
+    int32 total_amount = 5;
+    OrderStatus status = 6;
+    PayStatus pay_status = 7;
+    google.protobuf.Timestamp pay_time = 8;
+    google.protobuf.Timestamp ship_time = 9;
+    google.protobuf.Timestamp confirm_time = 10;
+    repeated OrderItem items = 11;
+    google.protobuf.Timestamp created_at = 12;
+}
+
+message CreateOrderRequest {
+    int64 user_id = 1;
+    int64 shop_id = 2;
+    repeated OrderItem items = 3;
+}
+
+message CreateOrderResponse {
+    int64 order_id = 1;
+    string order_no = 2;
+}
+
+message GetOrderRequest {
+    int64 order_id = 1;
+}
+
+message GetOrderResponse {
+    Order order = 1;
+}
+
+message ListOrdersRequest {
+    int64 user_id = 1;
+    int32 page = 2;
+    int32 page_size = 3;
+    OrderStatus status = 4;
+}
+
+message ListOrdersResponse {
+    repeated Order orders = 1;
+    int32 total = 2;
+}
+
+message UpdateOrderStatusRequest {
+    int64 order_id = 1;
+    OrderStatus status = 2;
+}
+
+message UpdateOrderStatusResponse {
+    bool success = 1;
+}
+
+message CancelOrderRequest {
+    int64 order_id = 1;
+}
+
+message CancelOrderResponse {
+    bool success = 1;
+}
+
+service OrderService {
+    rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/orders"
+            body: "*"
+        };
+    }
+    
+    rpc GetOrder(GetOrderRequest) returns (GetOrderResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/orders/{order_id}"
+        };
+    }
+    
+    rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/orders"
+        };
+    }
+    
+    rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (UpdateOrderStatusResponse) {
+        option (google.api.http) = {
+            put: "/api/v1/orders/{order_id}/status"
+            body: "*"
+        };
+    }
+    
+    rpc CancelOrder(CancelOrderRequest) returns (CancelOrderResponse) {
+        option (google.api.http) = {
+            delete: "/api/v1/orders/{order_id}"
+        };
+    }
+}
