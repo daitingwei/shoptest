@@ -40,6 +40,20 @@ service Sku {
       delete: "/api/v1/skus/{id}"
     };
   }
+  // 扣减库存（乐观锁）
+  rpc DeductStock (DeductStockRequest) returns (DeductStockResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/skus/{id}/deduct"
+      body: "*"
+    };
+  }
+  // 回补库存
+  rpc RestoreStock (RestoreStockRequest) returns (RestoreStockResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/skus/{id}/restore"
+      body: "*"
+    };
+  }
 }
 
 // SKU实体
@@ -114,4 +128,26 @@ message DeleteSkuRequest {
 
 message DeleteSkuResponse {
   bool success = 1;
+}
+
+// 扣减库存
+message DeductStockRequest {
+  int64 id = 1;
+  int64 quantity = 2;
+}
+
+message DeductStockResponse {
+  bool success = 1;
+  int64 new_stock = 2;
+}
+
+// 回补库存
+message RestoreStockRequest {
+  int64 id = 1;
+  int64 quantity = 2;
+}
+
+message RestoreStockResponse {
+  bool success = 1;
+  int64 new_stock = 2;
 }

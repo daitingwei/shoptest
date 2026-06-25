@@ -20,20 +20,26 @@ var _ = binding.EncodeURL
 const _ = http.SupportPackageIsVersion1
 
 const OperationSkuCreateSku = "/sku.v1.Sku/CreateSku"
+const OperationSkuDeductStock = "/sku.v1.Sku/DeductStock"
 const OperationSkuDeleteSku = "/sku.v1.Sku/DeleteSku"
 const OperationSkuGetSku = "/sku.v1.Sku/GetSku"
 const OperationSkuListSkus = "/sku.v1.Sku/ListSkus"
+const OperationSkuRestoreStock = "/sku.v1.Sku/RestoreStock"
 const OperationSkuUpdateSku = "/sku.v1.Sku/UpdateSku"
 
 type SkuHTTPServer interface {
 	// CreateSku 创建SKU
 	CreateSku(context.Context, *CreateSkuRequest) (*CreateSkuResponse, error)
+	// DeductStock 扣减库存（乐观锁）
+	DeductStock(context.Context, *DeductStockRequest) (*DeductStockResponse, error)
 	// DeleteSku 删除SKU
 	DeleteSku(context.Context, *DeleteSkuRequest) (*DeleteSkuResponse, error)
 	// GetSku 查看SKU详情
 	GetSku(context.Context, *GetSkuRequest) (*GetSkuResponse, error)
 	// ListSkus 分页查询SKU列表（支持按商品筛选）
 	ListSkus(context.Context, *ListSkusRequest) (*ListSkusResponse, error)
+	// RestoreStock 回补库存
+	RestoreStock(context.Context, *RestoreStockRequest) (*RestoreStockResponse, error)
 	// UpdateSku 更新SKU
 	UpdateSku(context.Context, *UpdateSkuRequest) (*UpdateSkuResponse, error)
 }
@@ -45,6 +51,8 @@ func RegisterSkuHTTPServer(s *http.Server, srv SkuHTTPServer) {
 	r.GET("/api/v1/skus/{id}", _Sku_GetSku0_HTTP_Handler(srv))
 	r.GET("/api/v1/skus", _Sku_ListSkus0_HTTP_Handler(srv))
 	r.DELETE("/api/v1/skus/{id}", _Sku_DeleteSku0_HTTP_Handler(srv))
+	r.POST("/api/v1/skus/{id}/deduct", _Sku_DeductStock0_HTTP_Handler(srv))
+	r.POST("/api/v1/skus/{id}/restore", _Sku_RestoreStock0_HTTP_Handler(srv))
 }
 
 func _Sku_CreateSku0_HTTP_Handler(srv SkuHTTPServer) func(ctx http.Context) error {
@@ -157,15 +165,69 @@ func _Sku_DeleteSku0_HTTP_Handler(srv SkuHTTPServer) func(ctx http.Context) erro
 	}
 }
 
+func _Sku_DeductStock0_HTTP_Handler(srv SkuHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DeductStockRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSkuDeductStock)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DeductStock(ctx, req.(*DeductStockRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*DeductStockResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Sku_RestoreStock0_HTTP_Handler(srv SkuHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in RestoreStockRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSkuRestoreStock)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.RestoreStock(ctx, req.(*RestoreStockRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*RestoreStockResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
 type SkuHTTPClient interface {
 	// CreateSku 创建SKU
 	CreateSku(ctx context.Context, req *CreateSkuRequest, opts ...http.CallOption) (rsp *CreateSkuResponse, err error)
+	// DeductStock 扣减库存（乐观锁）
+	DeductStock(ctx context.Context, req *DeductStockRequest, opts ...http.CallOption) (rsp *DeductStockResponse, err error)
 	// DeleteSku 删除SKU
 	DeleteSku(ctx context.Context, req *DeleteSkuRequest, opts ...http.CallOption) (rsp *DeleteSkuResponse, err error)
 	// GetSku 查看SKU详情
 	GetSku(ctx context.Context, req *GetSkuRequest, opts ...http.CallOption) (rsp *GetSkuResponse, err error)
 	// ListSkus 分页查询SKU列表（支持按商品筛选）
 	ListSkus(ctx context.Context, req *ListSkusRequest, opts ...http.CallOption) (rsp *ListSkusResponse, err error)
+	// RestoreStock 回补库存
+	RestoreStock(ctx context.Context, req *RestoreStockRequest, opts ...http.CallOption) (rsp *RestoreStockResponse, err error)
 	// UpdateSku 更新SKU
 	UpdateSku(ctx context.Context, req *UpdateSkuRequest, opts ...http.CallOption) (rsp *UpdateSkuResponse, err error)
 }
@@ -184,6 +246,20 @@ func (c *SkuHTTPClientImpl) CreateSku(ctx context.Context, in *CreateSkuRequest,
 	pattern := "/api/v1/skus"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSkuCreateSku))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// DeductStock 扣减库存（乐观锁）
+func (c *SkuHTTPClientImpl) DeductStock(ctx context.Context, in *DeductStockRequest, opts ...http.CallOption) (*DeductStockResponse, error) {
+	var out DeductStockResponse
+	pattern := "/api/v1/skus/{id}/deduct"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationSkuDeductStock))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
@@ -228,6 +304,20 @@ func (c *SkuHTTPClientImpl) ListSkus(ctx context.Context, in *ListSkusRequest, o
 	opts = append(opts, http.Operation(OperationSkuListSkus))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// RestoreStock 回补库存
+func (c *SkuHTTPClientImpl) RestoreStock(ctx context.Context, in *RestoreStockRequest, opts ...http.CallOption) (*RestoreStockResponse, error) {
+	var out RestoreStockResponse
+	pattern := "/api/v1/skus/{id}/restore"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationSkuRestoreStock))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
