@@ -9,6 +9,7 @@ package main
 import (
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/registry"
 	"productCenter/internal/biz"
 	"productCenter/internal/conf"
 	"productCenter/internal/data"
@@ -23,7 +24,7 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, confRegistry *conf.Registry, logger log.Logger, registrar registry.Registrar) (*kratos.App, func(), error) {
 	dataData, cleanup, err := data.NewData(confData, logger)
 	if err != nil {
 		return nil, nil, err
@@ -51,7 +52,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	bffService := service.NewBFFService(bffUseCase)
 	grpcServer := server.NewGRPCServer(confServer, greeterService, shopService, productService, skuService, productTagService, productMediaService, bffService, logger)
 	httpServer := server.NewHTTPServer(confServer, greeterService, shopService, productService, skuService, productTagService, productMediaService, bffService, logger)
-	app := newApp(logger, grpcServer, httpServer)
+	app := newApp(logger, grpcServer, httpServer, registrar)
 	return app, func() {
 		cleanup()
 	}, nil

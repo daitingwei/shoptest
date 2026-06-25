@@ -11,8 +11,13 @@ import (
 	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
+	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/nacos-group/nacos-sdk-go/v2/clients"
+	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
+	"github.com/nacos-group/nacos-sdk-go/v2/vo"
+	nacosRegistry "github.com/go-kratos/kratos/contrib/registry/nacos/v2"
 
 	_ "go.uber.org/automaxprocs"
 )
@@ -33,7 +38,7 @@ func init() {
 	flag.StringVar(&flagconf, "conf", "../../configs", "config path, eg: -conf config.yaml")
 }
 
-func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
+func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, r registry.Registrar) *kratos.App {
 	return kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),
@@ -44,6 +49,7 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
 			gs,
 			hs,
 		),
+		kratos.Registrar(r),
 	)
 }
 
@@ -74,7 +80,26 @@ func main() {
 		panic(err)
 	}
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, logger)
+	sc := []constant.ServerConfig{
+		*constant.NewServerConfig(bc.Registry.Nacos.Address, 8848),
+	}
+	cc := constant.ClientConfig{
+		NamespaceId:         bc.Registry.Nacos.NamespaceId,
+		TimeoutMs:           uint64(bc.Registry.Nacos.TimeoutMs),
+		NotLoadCacheAtStart: true,
+		LogDir:              bc.Registry.Nacos.LogDir,
+		CacheDir:            bc.Registry.Nacos.CacheDir,
+	}
+	nacosClient, err := clients.NewNamingClient(vo.NacosClientParam{
+		ClientConfig:  &cc,
+		ServerConfigs: sc,
+	})
+	if err != nil {
+		panic(err)
+	}
+	r := nacosRegistry.New(nacosClient)
+
+	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Registry, logger, r)
 	if err != nil {
 		panic(err)
 	}
