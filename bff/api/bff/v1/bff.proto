@@ -4,7 +4,7 @@ package bff.v1;
 
 import "google/api/annotations.proto";
 
-option go_package = "productCenter/api/bff/v1;v1";
+option go_package = "bff/api/bff/v1;v1";
 
 // BFF 聚合服务 — 面向前端的统一入口
 service BFF {

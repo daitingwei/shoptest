@@ -1,0 +1,7 @@
+syntax = "proto3";
+package bff.v1;
+option go_package = "bff/api/bff/v1;v1";
+enum ErrorReason {
+    PRODUCT_NOT_FOUND = 0;
+    SHOP_NOT_FOUND = 1;
+}

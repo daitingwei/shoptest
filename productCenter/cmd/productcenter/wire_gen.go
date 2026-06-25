@@ -47,11 +47,8 @@ func wireApp(confServer *conf.Server, confData *conf.Data, confRegistry *conf.Re
 	productMediaRepo := data.NewProductMediaRepo(dataData, logger)
 	productMediaUseCase := biz.NewProductMediaUseCase(productMediaRepo, logger)
 	productMediaService := service.NewProductMediaService(productMediaUseCase)
-	bffRepo := data.NewBFFRepo(dataData, logger)
-	bffUseCase := biz.NewBFFUseCase(bffRepo, logger)
-	bffService := service.NewBFFService(bffUseCase)
-	grpcServer := server.NewGRPCServer(confServer, greeterService, shopService, productService, skuService, productTagService, productMediaService, bffService, logger)
-	httpServer := server.NewHTTPServer(confServer, greeterService, shopService, productService, skuService, productTagService, productMediaService, bffService, logger)
+	grpcServer := server.NewGRPCServer(confServer, greeterService, shopService, productService, skuService, productTagService, productMediaService, logger)
+	httpServer := server.NewHTTPServer(confServer, greeterService, shopService, productService, skuService, productTagService, productMediaService, logger)
 	app := newApp(logger, grpcServer, httpServer, registrar)
 	return app, func() {
 		cleanup()

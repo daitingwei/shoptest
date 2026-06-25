@@ -1,7 +1,6 @@
 package server
 
 import (
-	bffv1 "productCenter/api/bff/v1"
 	hellov1 "productCenter/api/helloworld/v1"
 	productv1 "productCenter/api/product/v1"
 	mediav1 "productCenter/api/productmedia/v1"
@@ -24,7 +23,6 @@ func NewGRPCServer(c *conf.Server,
 	sku *service.SkuService,
 	productTag *service.ProductTagService,
 	productMedia *service.ProductMediaService,
-	bff *service.BFFService,
 	logger log.Logger,
 ) *grpc.Server {
 	var opts = []grpc.ServerOption{
@@ -48,6 +46,5 @@ func NewGRPCServer(c *conf.Server,
 	skuv1.RegisterSkuServer(srv, sku)
 	tagv1.RegisterProductTagServer(srv, productTag)
 	mediav1.RegisterProductMediaServer(srv, productMedia)
-	bffv1.RegisterBFFServer(srv, bff)
 	return srv
 }

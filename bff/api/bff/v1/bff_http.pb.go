@@ -35,7 +35,7 @@ type BFFHTTPServer interface {
 func RegisterBFFHTTPServer(s *http.Server, srv BFFHTTPServer) {
 	r := s.Route("/")
 	r.GET("/api/v1/bff/products/{id}", _BFF_GetProductDetail0_HTTP_Handler(srv))
-	r.GET("/api/v1/bff/products", _BFF_ListProducts1_HTTP_Handler(srv))
+	r.GET("/api/v1/bff/products", _BFF_ListProducts0_HTTP_Handler(srv))
 	r.GET("/api/v1/bff/shops/{id}", _BFF_GetShopHome0_HTTP_Handler(srv))
 }
 
@@ -61,7 +61,7 @@ func _BFF_GetProductDetail0_HTTP_Handler(srv BFFHTTPServer) func(ctx http.Contex
 	}
 }
 
-func _BFF_ListProducts1_HTTP_Handler(srv BFFHTTPServer) func(ctx http.Context) error {
+func _BFF_ListProducts0_HTTP_Handler(srv BFFHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in ListProductsRequest
 		if err := ctx.BindQuery(&in); err != nil {

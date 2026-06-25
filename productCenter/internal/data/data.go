@@ -21,7 +21,6 @@ var ProviderSet = wire.NewSet(
 	NewProductRepo,
 	NewProductMediaRepo,
 	NewSkuRepo,
-	NewBFFRepo,
 )
 
 // Data 数据层封装结构体，持有数据库连接等资源

@@ -2,8 +2,16 @@ package biz
 
 import (
 	"context"
+	"errors"
 
 	"github.com/go-kratos/kratos/v2/log"
+)
+
+var (
+	// ErrProductNotFound 商品不存在
+	ErrProductNotFound = errors.New("PRODUCT_NOT_FOUND: 商品不存在")
+	// ErrShopNotFound 店铺不存在
+	ErrShopNotFound = errors.New("SHOP_NOT_FOUND: 店铺不存在")
 )
 
 // BFFRepo BFF聚合查询数据仓库接口，由 data 层实现

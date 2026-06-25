@@ -7,7 +7,7 @@ toolchain go1.24.6
 require (
 	github.com/go-kratos/kratos/contrib/registry/nacos/v2 v2.0.0-20260404020628-f149714c1d54
 	github.com/go-kratos/kratos/v2 v2.9.2
-	github.com/google/wire v0.6.0
+	github.com/google/wire v0.7.0
 	github.com/nacos-group/nacos-sdk-go/v2 v2.3.5
 	go.uber.org/automaxprocs v1.5.1
 	google.golang.org/genproto/googleapis/api v0.0.0-20240814211410-ddb44dafa142
@@ -81,4 +81,7 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	productCenter v0.0.0
 )
+
+replace productCenter => ../productCenter

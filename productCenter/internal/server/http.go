@@ -1,7 +1,6 @@
 package server
 
 import (
-	bffv1 "productCenter/api/bff/v1"
 	hellov1 "productCenter/api/helloworld/v1"
 	productv1 "productCenter/api/product/v1"
 	mediav1 "productCenter/api/productmedia/v1"
@@ -24,7 +23,6 @@ func NewHTTPServer(c *conf.Server,
 	sku *service.SkuService,
 	productTag *service.ProductTagService,
 	productMedia *service.ProductMediaService,
-	bff *service.BFFService,
 	logger log.Logger,
 ) *http.Server {
 	var opts = []http.ServerOption{
@@ -48,6 +46,5 @@ func NewHTTPServer(c *conf.Server,
 	skuv1.RegisterSkuHTTPServer(srv, sku)
 	tagv1.RegisterProductTagHTTPServer(srv, productTag)
 	mediav1.RegisterProductMediaHTTPServer(srv, productMedia)
-	bffv1.RegisterBFFHTTPServer(srv, bff)
 	return srv
 }

@@ -60,26 +60,3 @@ type Sku struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
-
-// ProductDetail 商品详情聚合实体（BFF层使用）
-type ProductDetail struct {
-	Product *Product        `json:"product"`
-	Shop    *Shop           `json:"shop"`
-	Tags    []*ProductTag   `json:"tags"`
-	Skus    []*Sku          `json:"skus"`
-	Medias  []*ProductMedia `json:"medias"`
-}
-
-// ProductListItem 商品列表项（BFF层使用）
-type ProductListItem struct {
-	Product  *Product      `json:"product"`
-	ShopName string        `json:"shop_name"`
-	Tags     []*ProductTag `json:"tags"`
-}
-
-// ShopHome 店铺首页聚合实体（BFF层使用）
-type ShopHome struct {
-	Shop     *Shop              `json:"shop"`
-	Products []*ProductListItem `json:"products"`
-	Total    int64              `json:"total"`
-}

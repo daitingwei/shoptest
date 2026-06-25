@@ -10,5 +10,4 @@ var ProviderSet = wire.NewSet(
 	NewProductTagUseCase,
 	NewSkuUseCase,
 	NewProductMediaUseCase,
-	NewBFFUseCase,
 )

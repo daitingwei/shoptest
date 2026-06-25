@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	v1 "productCenter/api/bff/v1"
-	"productCenter/internal/biz"
+	v1 "bff/api/bff/v1"
+	"bff/internal/biz"
 )
 
 // BFFService BFF 聚合服务，提供前端统一入口

@@ -10,5 +10,4 @@ var ProviderSet = wire.NewSet(
 	NewProductService,
 	NewSkuService,
 	NewProductMediaService,
-	NewBFFService,
 )
