@@ -28,6 +28,13 @@ service BFF {
       get: "/api/v1/bff/shops/{id}"
     };
   }
+  // 创建订单
+  rpc CreateOrder (CreateOrderRequest) returns (CreateOrderResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bff/orders"
+      body: "*"
+    };
+  }
 }
 
 // 商品详情页聚合数据
@@ -127,3 +134,26 @@ message GetShopHomeRequest {
 message GetShopHomeResponse {
   ShopHome shop = 1;
 }
+
+// 创建订单请求
+message CreateOrderRequest {
+  int64 user_id = 1;
+  int64 shop_id = 2;
+  repeated OrderItem items = 3;
+}
+
+message CreateOrderResponse {
+  int64 order_id = 1;
+  string order_no = 2;
+}
+
+message OrderItem {
+  int64 product_id = 1;
+  int64 sku_id = 2;
+  string product_name = 3;
+  string sku_title = 4;
+  int32 price = 5;
+  int32 quantity = 6;
+  string image_url = 7;
+}
+

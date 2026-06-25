@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"bff/internal/biz"
+	orderv1 "order/api/order/v1"
 	productv1 "productCenter/api/product/v1"
 	mediav1 "productCenter/api/productmedia/v1"
 	shopv1 "productCenter/api/shop/v1"
@@ -212,4 +213,31 @@ func (r *bffRepo) GetShopHome(ctx context.Context, shopID int64, page, pageSize 
 		Products: products,
 		Total:    int64(productResp.Total),
 	}, nil
+}
+
+// CreateOrder 通过 gRPC 调用 Order 服务创建订单
+func (r *bffRepo) CreateOrder(ctx context.Context, requestID string, userID, shopID int64, items []*biz.OrderItem) (*biz.CreateOrderResult, error) {
+	orderClient := orderv1.NewOrderServiceClient(r.data.orderConn)
+	protoItems := make([]*orderv1.OrderItem, len(items))
+	for i := range items {
+		protoItems[i] = &orderv1.OrderItem{
+			ProductId:   items[i].ProductID,
+			SkuId:       items[i].SKUID,
+			ProductName: items[i].ProductName,
+			SkuTitle:    items[i].SKUTitle,
+			Price:       int32(items[i].Price),
+			Quantity:    int32(items[i].Quantity),
+			ImageUrl:    items[i].ImageURL,
+		}
+	}
+	resp, err := orderClient.CreateOrder(ctx, &orderv1.CreateOrderRequest{
+		RequestId: requestID,
+		UserId:    userID,
+		ShopId:    shopID,
+		Items:     protoItems,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &biz.CreateOrderResult{OrderID: resp.OrderId, OrderNo: resp.OrderNo}, nil
 }

@@ -4,24 +4,23 @@ import (
 	"context"
 	"errors"
 
+	v1 "bff/api/bff/v1"
+
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/google/uuid"
 )
 
 var (
-	// ErrProductNotFound 商品不存在
-	ErrProductNotFound = errors.New("PRODUCT_NOT_FOUND: 商品不存在")
-	// ErrShopNotFound 店铺不存在
-	ErrShopNotFound = errors.New("SHOP_NOT_FOUND: 店铺不存在")
+	ErrProductNotFound = errors.New(v1.ErrorReason_PRODUCT_NOT_FOUND.String())
+	ErrShopNotFound    = errors.New(v1.ErrorReason_SHOP_NOT_FOUND.String())
 )
 
 // BFFRepo BFF聚合查询数据仓库接口，由 data 层实现
 type BFFRepo interface {
-	// GetProductDetail 聚合查询商品详情，包含商品、店铺、标签、SKU、媒体
 	GetProductDetail(ctx context.Context, id int64) (*ProductDetail, error)
-	// ListProducts 聚合查询商品列表，支持按门店和状态筛选
 	ListProducts(ctx context.Context, page, pageSize int32, shopID int64, status int32) ([]*ProductListItem, int64, error)
-	// GetShopHome 聚合查询店铺首页，包含店铺信息和商品列表
 	GetShopHome(ctx context.Context, id int64, page, pageSize int32) (*ShopHome, error)
+	CreateOrder(ctx context.Context, requestID string, userID, shopID int64, items []*OrderItem) (*CreateOrderResult, error)
 }
 
 // BFFUseCase BFF聚合查询业务用例
@@ -72,4 +71,11 @@ func (uc *BFFUseCase) GetShopHome(ctx context.Context, id int64, page, pageSize 
 	}
 	uc.log.WithContext(ctx).Infof("GetShopHome: id=%d, page=%d, pageSize=%d", id, page, pageSize)
 	return uc.repo.GetShopHome(ctx, id, page, pageSize)
+}
+
+// CreateOrder 创建订单，自动生成 request_id
+func (uc *BFFUseCase) CreateOrder(ctx context.Context, userID, shopID int64, items []*OrderItem) (*CreateOrderResult, error) {
+	requestID := uuid.NewString()
+	uc.log.WithContext(ctx).Infof("CreateOrder: requestID=%s, userID=%d, shopID=%d", requestID, userID, shopID)
+	return uc.repo.CreateOrder(ctx, requestID, userID, shopID, items)
 }

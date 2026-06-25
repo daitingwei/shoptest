@@ -19,11 +19,14 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationBFFCreateOrder = "/bff.v1.BFF/CreateOrder"
 const OperationBFFGetProductDetail = "/bff.v1.BFF/GetProductDetail"
 const OperationBFFGetShopHome = "/bff.v1.BFF/GetShopHome"
 const OperationBFFListProducts = "/bff.v1.BFF/ListProducts"
 
 type BFFHTTPServer interface {
+	// CreateOrder 创建订单
+	CreateOrder(context.Context, *CreateOrderRequest) (*CreateOrderResponse, error)
 	// GetProductDetail 商品详情页 — 聚合商品 + 店铺 + 标签 + SKU + 副图
 	GetProductDetail(context.Context, *GetProductDetailRequest) (*GetProductDetailResponse, error)
 	// GetShopHome 店铺主页 — 聚合店铺 + 商品列表
@@ -37,6 +40,7 @@ func RegisterBFFHTTPServer(s *http.Server, srv BFFHTTPServer) {
 	r.GET("/api/v1/bff/products/{id}", _BFF_GetProductDetail0_HTTP_Handler(srv))
 	r.GET("/api/v1/bff/products", _BFF_ListProducts0_HTTP_Handler(srv))
 	r.GET("/api/v1/bff/shops/{id}", _BFF_GetShopHome0_HTTP_Handler(srv))
+	r.POST("/api/v1/bff/orders", _BFF_CreateOrder0_HTTP_Handler(srv))
 }
 
 func _BFF_GetProductDetail0_HTTP_Handler(srv BFFHTTPServer) func(ctx http.Context) error {
@@ -102,7 +106,31 @@ func _BFF_GetShopHome0_HTTP_Handler(srv BFFHTTPServer) func(ctx http.Context) er
 	}
 }
 
+func _BFF_CreateOrder0_HTTP_Handler(srv BFFHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in CreateOrderRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationBFFCreateOrder)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CreateOrder(ctx, req.(*CreateOrderRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*CreateOrderResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
 type BFFHTTPClient interface {
+	// CreateOrder 创建订单
+	CreateOrder(ctx context.Context, req *CreateOrderRequest, opts ...http.CallOption) (rsp *CreateOrderResponse, err error)
 	// GetProductDetail 商品详情页 — 聚合商品 + 店铺 + 标签 + SKU + 副图
 	GetProductDetail(ctx context.Context, req *GetProductDetailRequest, opts ...http.CallOption) (rsp *GetProductDetailResponse, err error)
 	// GetShopHome 店铺主页 — 聚合店铺 + 商品列表
@@ -117,6 +145,20 @@ type BFFHTTPClientImpl struct {
 
 func NewBFFHTTPClient(client *http.Client) BFFHTTPClient {
 	return &BFFHTTPClientImpl{client}
+}
+
+// CreateOrder 创建订单
+func (c *BFFHTTPClientImpl) CreateOrder(ctx context.Context, in *CreateOrderRequest, opts ...http.CallOption) (*CreateOrderResponse, error) {
+	var out CreateOrderResponse
+	pattern := "/api/v1/bff/orders"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationBFFCreateOrder))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 // GetProductDetail 商品详情页 — 聚合商品 + 店铺 + 标签 + SKU + 副图

@@ -22,6 +22,7 @@ const (
 	BFF_GetProductDetail_FullMethodName = "/bff.v1.BFF/GetProductDetail"
 	BFF_ListProducts_FullMethodName     = "/bff.v1.BFF/ListProducts"
 	BFF_GetShopHome_FullMethodName      = "/bff.v1.BFF/GetShopHome"
+	BFF_CreateOrder_FullMethodName      = "/bff.v1.BFF/CreateOrder"
 )
 
 // BFFClient is the client API for BFF service.
@@ -36,6 +37,8 @@ type BFFClient interface {
 	ListProducts(ctx context.Context, in *ListProductsRequest, opts ...grpc.CallOption) (*ListProductsResponse, error)
 	// 店铺主页 — 聚合店铺 + 商品列表
 	GetShopHome(ctx context.Context, in *GetShopHomeRequest, opts ...grpc.CallOption) (*GetShopHomeResponse, error)
+	// 创建订单
+	CreateOrder(ctx context.Context, in *CreateOrderRequest, opts ...grpc.CallOption) (*CreateOrderResponse, error)
 }
 
 type bFFClient struct {
@@ -76,6 +79,16 @@ func (c *bFFClient) GetShopHome(ctx context.Context, in *GetShopHomeRequest, opt
 	return out, nil
 }
 
+func (c *bFFClient) CreateOrder(ctx context.Context, in *CreateOrderRequest, opts ...grpc.CallOption) (*CreateOrderResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateOrderResponse)
+	err := c.cc.Invoke(ctx, BFF_CreateOrder_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BFFServer is the server API for BFF service.
 // All implementations must embed UnimplementedBFFServer
 // for forward compatibility.
@@ -88,6 +101,8 @@ type BFFServer interface {
 	ListProducts(context.Context, *ListProductsRequest) (*ListProductsResponse, error)
 	// 店铺主页 — 聚合店铺 + 商品列表
 	GetShopHome(context.Context, *GetShopHomeRequest) (*GetShopHomeResponse, error)
+	// 创建订单
+	CreateOrder(context.Context, *CreateOrderRequest) (*CreateOrderResponse, error)
 	mustEmbedUnimplementedBFFServer()
 }
 
@@ -106,6 +121,9 @@ func (UnimplementedBFFServer) ListProducts(context.Context, *ListProductsRequest
 }
 func (UnimplementedBFFServer) GetShopHome(context.Context, *GetShopHomeRequest) (*GetShopHomeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetShopHome not implemented")
+}
+func (UnimplementedBFFServer) CreateOrder(context.Context, *CreateOrderRequest) (*CreateOrderResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateOrder not implemented")
 }
 func (UnimplementedBFFServer) mustEmbedUnimplementedBFFServer() {}
 func (UnimplementedBFFServer) testEmbeddedByValue()             {}
@@ -182,6 +200,24 @@ func _BFF_GetShopHome_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BFF_CreateOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateOrderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BFFServer).CreateOrder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BFF_CreateOrder_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BFFServer).CreateOrder(ctx, req.(*CreateOrderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BFF_ServiceDesc is the grpc.ServiceDesc for BFF service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -200,6 +236,10 @@ var BFF_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetShopHome",
 			Handler:    _BFF_GetShopHome_Handler,
+		},
+		{
+			MethodName: "CreateOrder",
+			Handler:    _BFF_CreateOrder_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

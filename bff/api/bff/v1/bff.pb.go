@@ -908,6 +908,211 @@ func (x *GetShopHomeResponse) GetShop() *ShopHome {
 	return nil
 }
 
+// 创建订单请求
+type CreateOrderRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	ShopId        int64                  `protobuf:"varint,2,opt,name=shop_id,json=shopId,proto3" json:"shop_id,omitempty"`
+	Items         []*OrderItem           `protobuf:"bytes,3,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateOrderRequest) Reset() {
+	*x = CreateOrderRequest{}
+	mi := &file_bff_v1_bff_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateOrderRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateOrderRequest) ProtoMessage() {}
+
+func (x *CreateOrderRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_bff_v1_bff_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateOrderRequest.ProtoReflect.Descriptor instead.
+func (*CreateOrderRequest) Descriptor() ([]byte, []int) {
+	return file_bff_v1_bff_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *CreateOrderRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *CreateOrderRequest) GetShopId() int64 {
+	if x != nil {
+		return x.ShopId
+	}
+	return 0
+}
+
+func (x *CreateOrderRequest) GetItems() []*OrderItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+type CreateOrderResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderId       int64                  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	OrderNo       string                 `protobuf:"bytes,2,opt,name=order_no,json=orderNo,proto3" json:"order_no,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateOrderResponse) Reset() {
+	*x = CreateOrderResponse{}
+	mi := &file_bff_v1_bff_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateOrderResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateOrderResponse) ProtoMessage() {}
+
+func (x *CreateOrderResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_bff_v1_bff_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateOrderResponse.ProtoReflect.Descriptor instead.
+func (*CreateOrderResponse) Descriptor() ([]byte, []int) {
+	return file_bff_v1_bff_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *CreateOrderResponse) GetOrderId() int64 {
+	if x != nil {
+		return x.OrderId
+	}
+	return 0
+}
+
+func (x *CreateOrderResponse) GetOrderNo() string {
+	if x != nil {
+		return x.OrderNo
+	}
+	return ""
+}
+
+type OrderItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	SkuId         int64                  `protobuf:"varint,2,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"`
+	ProductName   string                 `protobuf:"bytes,3,opt,name=product_name,json=productName,proto3" json:"product_name,omitempty"`
+	SkuTitle      string                 `protobuf:"bytes,4,opt,name=sku_title,json=skuTitle,proto3" json:"sku_title,omitempty"`
+	Price         int32                  `protobuf:"varint,5,opt,name=price,proto3" json:"price,omitempty"`
+	Quantity      int32                  `protobuf:"varint,6,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	ImageUrl      string                 `protobuf:"bytes,7,opt,name=image_url,json=imageUrl,proto3" json:"image_url,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *OrderItem) Reset() {
+	*x = OrderItem{}
+	mi := &file_bff_v1_bff_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OrderItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OrderItem) ProtoMessage() {}
+
+func (x *OrderItem) ProtoReflect() protoreflect.Message {
+	mi := &file_bff_v1_bff_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OrderItem.ProtoReflect.Descriptor instead.
+func (*OrderItem) Descriptor() ([]byte, []int) {
+	return file_bff_v1_bff_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *OrderItem) GetProductId() int64 {
+	if x != nil {
+		return x.ProductId
+	}
+	return 0
+}
+
+func (x *OrderItem) GetSkuId() int64 {
+	if x != nil {
+		return x.SkuId
+	}
+	return 0
+}
+
+func (x *OrderItem) GetProductName() string {
+	if x != nil {
+		return x.ProductName
+	}
+	return ""
+}
+
+func (x *OrderItem) GetSkuTitle() string {
+	if x != nil {
+		return x.SkuTitle
+	}
+	return ""
+}
+
+func (x *OrderItem) GetPrice() int32 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+func (x *OrderItem) GetQuantity() int32 {
+	if x != nil {
+		return x.Quantity
+	}
+	return 0
+}
+
+func (x *OrderItem) GetImageUrl() string {
+	if x != nil {
+		return x.ImageUrl
+	}
+	return ""
+}
+
 var File_bff_v1_bff_proto protoreflect.FileDescriptor
 
 const file_bff_v1_bff_proto_rawDesc = "" +
@@ -985,11 +1190,28 @@ const file_bff_v1_bff_proto_rawDesc = "" +
 	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\";\n" +
 	"\x13GetShopHomeResponse\x12$\n" +
-	"\x04shop\x18\x01 \x01(\v2\x10.bff.v1.ShopHomeR\x04shop2\xd0\x02\n" +
+	"\x04shop\x18\x01 \x01(\v2\x10.bff.v1.ShopHomeR\x04shop\"o\n" +
+	"\x12CreateOrderRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x17\n" +
+	"\ashop_id\x18\x02 \x01(\x03R\x06shopId\x12'\n" +
+	"\x05items\x18\x03 \x03(\v2\x11.bff.v1.OrderItemR\x05items\"K\n" +
+	"\x13CreateOrderResponse\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\x03R\aorderId\x12\x19\n" +
+	"\border_no\x18\x02 \x01(\tR\aorderNo\"\xd0\x01\n" +
+	"\tOrderItem\x12\x1d\n" +
+	"\n" +
+	"product_id\x18\x01 \x01(\x03R\tproductId\x12\x15\n" +
+	"\x06sku_id\x18\x02 \x01(\x03R\x05skuId\x12!\n" +
+	"\fproduct_name\x18\x03 \x01(\tR\vproductName\x12\x1b\n" +
+	"\tsku_title\x18\x04 \x01(\tR\bskuTitle\x12\x14\n" +
+	"\x05price\x18\x05 \x01(\x05R\x05price\x12\x1a\n" +
+	"\bquantity\x18\x06 \x01(\x05R\bquantity\x12\x1b\n" +
+	"\timage_url\x18\a \x01(\tR\bimageUrl2\xb7\x03\n" +
 	"\x03BFF\x12x\n" +
 	"\x10GetProductDetail\x12\x1f.bff.v1.GetProductDetailRequest\x1a .bff.v1.GetProductDetailResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/api/v1/bff/products/{id}\x12g\n" +
 	"\fListProducts\x12\x1b.bff.v1.ListProductsRequest\x1a\x1c.bff.v1.ListProductsResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/api/v1/bff/products\x12f\n" +
-	"\vGetShopHome\x12\x1a.bff.v1.GetShopHomeRequest\x1a\x1b.bff.v1.GetShopHomeResponse\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/api/v1/bff/shops/{id}B\x13Z\x11bff/api/bff/v1;v1b\x06proto3"
+	"\vGetShopHome\x12\x1a.bff.v1.GetShopHomeRequest\x1a\x1b.bff.v1.GetShopHomeResponse\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/api/v1/bff/shops/{id}\x12e\n" +
+	"\vCreateOrder\x12\x1a.bff.v1.CreateOrderRequest\x1a\x1b.bff.v1.CreateOrderResponse\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\"\x12/api/v1/bff/ordersB\x13Z\x11bff/api/bff/v1;v1b\x06proto3"
 
 var (
 	file_bff_v1_bff_proto_rawDescOnce sync.Once
@@ -1003,7 +1225,7 @@ func file_bff_v1_bff_proto_rawDescGZIP() []byte {
 	return file_bff_v1_bff_proto_rawDescData
 }
 
-var file_bff_v1_bff_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_bff_v1_bff_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_bff_v1_bff_proto_goTypes = []any{
 	(*ProductDetail)(nil),            // 0: bff.v1.ProductDetail
 	(*Tag)(nil),                      // 1: bff.v1.Tag
@@ -1017,6 +1239,9 @@ var file_bff_v1_bff_proto_goTypes = []any{
 	(*ListProductsResponse)(nil),     // 9: bff.v1.ListProductsResponse
 	(*GetShopHomeRequest)(nil),       // 10: bff.v1.GetShopHomeRequest
 	(*GetShopHomeResponse)(nil),      // 11: bff.v1.GetShopHomeResponse
+	(*CreateOrderRequest)(nil),       // 12: bff.v1.CreateOrderRequest
+	(*CreateOrderResponse)(nil),      // 13: bff.v1.CreateOrderResponse
+	(*OrderItem)(nil),                // 14: bff.v1.OrderItem
 }
 var file_bff_v1_bff_proto_depIdxs = []int32{
 	1,  // 0: bff.v1.ProductDetail.tags:type_name -> bff.v1.Tag
@@ -1027,17 +1252,20 @@ var file_bff_v1_bff_proto_depIdxs = []int32{
 	0,  // 5: bff.v1.GetProductDetailResponse.product:type_name -> bff.v1.ProductDetail
 	4,  // 6: bff.v1.ListProductsResponse.products:type_name -> bff.v1.ProductListItem
 	5,  // 7: bff.v1.GetShopHomeResponse.shop:type_name -> bff.v1.ShopHome
-	6,  // 8: bff.v1.BFF.GetProductDetail:input_type -> bff.v1.GetProductDetailRequest
-	8,  // 9: bff.v1.BFF.ListProducts:input_type -> bff.v1.ListProductsRequest
-	10, // 10: bff.v1.BFF.GetShopHome:input_type -> bff.v1.GetShopHomeRequest
-	7,  // 11: bff.v1.BFF.GetProductDetail:output_type -> bff.v1.GetProductDetailResponse
-	9,  // 12: bff.v1.BFF.ListProducts:output_type -> bff.v1.ListProductsResponse
-	11, // 13: bff.v1.BFF.GetShopHome:output_type -> bff.v1.GetShopHomeResponse
-	11, // [11:14] is the sub-list for method output_type
-	8,  // [8:11] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	14, // 8: bff.v1.CreateOrderRequest.items:type_name -> bff.v1.OrderItem
+	6,  // 9: bff.v1.BFF.GetProductDetail:input_type -> bff.v1.GetProductDetailRequest
+	8,  // 10: bff.v1.BFF.ListProducts:input_type -> bff.v1.ListProductsRequest
+	10, // 11: bff.v1.BFF.GetShopHome:input_type -> bff.v1.GetShopHomeRequest
+	12, // 12: bff.v1.BFF.CreateOrder:input_type -> bff.v1.CreateOrderRequest
+	7,  // 13: bff.v1.BFF.GetProductDetail:output_type -> bff.v1.GetProductDetailResponse
+	9,  // 14: bff.v1.BFF.ListProducts:output_type -> bff.v1.ListProductsResponse
+	11, // 15: bff.v1.BFF.GetShopHome:output_type -> bff.v1.GetShopHomeResponse
+	13, // 16: bff.v1.BFF.CreateOrder:output_type -> bff.v1.CreateOrderResponse
+	13, // [13:17] is the sub-list for method output_type
+	9,  // [9:13] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_bff_v1_bff_proto_init() }
@@ -1051,7 +1279,7 @@ func file_bff_v1_bff_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_bff_v1_bff_proto_rawDesc), len(file_bff_v1_bff_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

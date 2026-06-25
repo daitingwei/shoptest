@@ -7,6 +7,25 @@ info:
     description: BFF 聚合服务 — 面向前端的统一入口
     version: 0.0.1
 paths:
+    /api/v1/bff/orders:
+        post:
+            tags:
+                - BFF
+            description: 创建订单
+            operationId: BFF_CreateOrder
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/bff.v1.CreateOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/bff.v1.CreateOrderResponse'
     /api/v1/bff/products:
         get:
             tags:
@@ -90,6 +109,25 @@ paths:
                                 $ref: '#/components/schemas/bff.v1.GetShopHomeResponse'
 components:
     schemas:
+        bff.v1.CreateOrderRequest:
+            type: object
+            properties:
+                userId:
+                    type: string
+                shopId:
+                    type: string
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/bff.v1.OrderItem'
+            description: 创建订单请求
+        bff.v1.CreateOrderResponse:
+            type: object
+            properties:
+                orderId:
+                    type: string
+                orderNo:
+                    type: string
         bff.v1.GetProductDetailResponse:
             type: object
             properties:
@@ -126,6 +164,25 @@ components:
                 sort:
                     type: integer
                     format: int32
+        bff.v1.OrderItem:
+            type: object
+            properties:
+                productId:
+                    type: string
+                skuId:
+                    type: string
+                productName:
+                    type: string
+                skuTitle:
+                    type: string
+                price:
+                    type: integer
+                    format: int32
+                quantity:
+                    type: integer
+                    format: int32
+                imageUrl:
+                    type: string
         bff.v1.ProductDetail:
             type: object
             properties:

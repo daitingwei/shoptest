@@ -129,6 +129,27 @@ func productDetailToProto(detail *biz.ProductDetail) *v1.ProductDetail {
 	}
 }
 
+// CreateOrder 创建订单
+func (s *BFFService) CreateOrder(ctx context.Context, req *v1.CreateOrderRequest) (*v1.CreateOrderResponse, error) {
+	items := make([]*biz.OrderItem, len(req.Items))
+	for i := range req.Items {
+		items[i] = &biz.OrderItem{
+			ProductID:   req.Items[i].ProductId,
+			SKUID:       req.Items[i].SkuId,
+			ProductName: req.Items[i].ProductName,
+			SKUTitle:    req.Items[i].SkuTitle,
+			Price:       int(req.Items[i].Price),
+			Quantity:    int(req.Items[i].Quantity),
+			ImageURL:    req.Items[i].ImageUrl,
+		}
+	}
+	result, err := s.uc.CreateOrder(ctx, req.UserId, req.ShopId, items)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.CreateOrderResponse{OrderId: result.OrderID, OrderNo: result.OrderNo}, nil
+}
+
 // productListItemToProto 将 biz 层 ProductListItem 转换为 proto ProductListItem
 func productListItemToProto(item *biz.ProductListItem) *v1.ProductListItem {
 	if item == nil || item.Product == nil {
