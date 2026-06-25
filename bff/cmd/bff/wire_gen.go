@@ -14,7 +14,6 @@ import (
 	"bff/internal/service"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/registry"
 )
 
 import (
@@ -23,9 +22,8 @@ import (
 
 // Injectors from wire.go:
 
-// wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, confRegistry *conf.Registry, logger log.Logger, registrar registry.Registrar, discovery registry.Discovery) (*kratos.App, func(), error) {
-	dataData, cleanup, err := data.NewData(confData, discovery, logger)
+func wireApp(confServer *conf.Server, confData *conf.Data, registry *conf.Registry, logger log.Logger) (*kratos.App, func(), error) {
+	dataData, cleanup, err := data.NewData(confData, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -34,7 +32,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, confRegistry *conf.Re
 	bffService := service.NewBFFService(bffUseCase)
 	grpcServer := server.NewGRPCServer(confServer, bffService, logger)
 	httpServer := server.NewHTTPServer(confServer, bffService, logger)
-	app := newApp(logger, grpcServer, httpServer, registrar)
+	app := newApp(logger, grpcServer, httpServer)
 	return app, func() {
 		cleanup()
 	}, nil
