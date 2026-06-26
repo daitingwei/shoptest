@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"gorm.io/gorm"
 	"order/internal/biz"
 	skuv1 "productCenter/api/sku/v1"
-	"gorm.io/gorm"
 )
 
 type OrderRepo struct {
@@ -51,6 +51,7 @@ func (r *OrderRepo) CreateOrder(ctx context.Context, order *biz.Order) (*biz.Ord
 			if err := tx.Create(orderItemModel).Error; err != nil {
 				return err
 			}
+			item.Model = orderItemModel.Model
 
 			if err := r.DeductStock(ctx, item.SKUID, item.Quantity); err != nil {
 				return err
@@ -71,7 +72,7 @@ func (r *OrderRepo) CreateOrder(ctx context.Context, order *biz.Order) (*biz.Ord
 // GetOrder 根据订单ID获取订单
 func (r *OrderRepo) GetOrder(ctx context.Context, orderID int64) (*biz.Order, error) {
 	var orderModel Order
-	if err := r.data.db.Preload("Items").First(&orderModel, orderID).Error; err != nil {
+	if err := r.data.db.Where("id = ?", orderID).Preload("Items").First(&orderModel).Error; err != nil {
 		return nil, err
 	}
 
@@ -135,10 +136,10 @@ func (r *OrderRepo) UpdateOrderStatus(ctx context.Context, orderID int64, status
 	}
 
 	switch status {
-	case biz.OrderStatusPaid:
+	case biz.OrderStatusAwaitingShipment:
 		now := time.Now()
 		updates["pay_time"] = now
-	case biz.OrderStatusShipped:
+	case biz.OrderStatusAwaitingCompleted:
 		now := time.Now()
 		updates["ship_time"] = now
 	case biz.OrderStatusCompleted:
@@ -221,6 +222,7 @@ func convertOrderToBiz(orderModel *Order) *biz.Order {
 		ShipTime:    orderModel.ShipTime,
 		ConfirmTime: orderModel.ConfirmTime,
 	}
+	order.Model = orderModel.Model
 
 	if len(orderModel.Items) > 0 {
 		order.Items = make([]*biz.OrderItem, len(orderModel.Items))
@@ -235,6 +237,7 @@ func convertOrderToBiz(orderModel *Order) *biz.Order {
 				Quantity:    orderModel.Items[i].Quantity,
 				ImageURL:    orderModel.Items[i].ImageURL,
 			}
+			order.Items[i].Model = orderModel.Items[i].Model
 		}
 	}
 

@@ -47,7 +47,7 @@ type Product struct {
 	CreatedAt      time.Time      `gorm:"column:created_at" json:"created_at"`
 	UpdatedAt      time.Time      `gorm:"column:updated_at" json:"updated_at"`
 	DeletedAt      gorm.DeletedAt `gorm:"column:deleted_at;index" json:"-"`
-	Tags           []ProductTag   `gorm:"many2many:product_tag_mapping;" json:"tags,omitempty"`
+	Tags           []ProductTag   `gorm:"many2many:product_tag_mapping;joinReferences:tag_id" json:"tags,omitempty"`
 	Shop           Shop           `gorm:"foreignKey:ShopID" json:"shop,omitempty"`
 }
 

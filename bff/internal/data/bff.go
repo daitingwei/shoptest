@@ -215,16 +215,36 @@ func (r *bffRepo) GetShopHome(ctx context.Context, shopID int64, page, pageSize 
 	}, nil
 }
 
-// CreateOrder 通过 gRPC 调用 Order 服务创建订单
+// CreateOrder 通过 gRPC 调用 Order 服务创建订单，自动填充商品名称和SKU名称
 func (r *bffRepo) CreateOrder(ctx context.Context, requestID string, userID, shopID int64, items []*biz.OrderItem) (*biz.CreateOrderResult, error) {
+	productClient := productv1.NewProductClient(r.data.pcConn)
+	skuClient := skuv1.NewSkuClient(r.data.pcConn)
+
 	orderClient := orderv1.NewOrderServiceClient(r.data.orderConn)
-	protoItems := make([]*orderv1.OrderItem, len(items))
+	protoItems := make([]*orderv1.CreateOrderItem, len(items))
 	for i := range items {
-		protoItems[i] = &orderv1.OrderItem{
+		productName := items[i].ProductName
+		skuTitle := items[i].SKUTitle
+
+		if productName == "" {
+			productResp, err := productClient.GetProduct(ctx, &productv1.GetProductRequest{Id: items[i].ProductID})
+			if err == nil && productResp != nil && productResp.Product != nil {
+				productName = productResp.Product.Name
+			}
+		}
+
+		if skuTitle == "" {
+			skuResp, err := skuClient.GetSku(ctx, &skuv1.GetSkuRequest{Id: items[i].SKUID})
+			if err == nil && skuResp != nil && skuResp.Sku != nil {
+				skuTitle = skuResp.Sku.Title
+			}
+		}
+
+		protoItems[i] = &orderv1.CreateOrderItem{
 			ProductId:   items[i].ProductID,
 			SkuId:       items[i].SKUID,
-			ProductName: items[i].ProductName,
-			SkuTitle:    items[i].SKUTitle,
+			ProductName: productName,
+			SkuTitle:    skuTitle,
 			Price:       int32(items[i].Price),
 			Quantity:    int32(items[i].Quantity),
 			ImageUrl:    items[i].ImageURL,

@@ -47,13 +47,19 @@ func (r *shopRepo) Update(ctx context.Context, shop *biz.Shop) (*biz.Shop, error
 	if err := r.data.db.WithContext(ctx).Model(&Shop{}).Where("id = ?", shop.ID).Updates(po).Error; err != nil {
 		return nil, err
 	}
+	// 更新后重新从数据库读取，获取真实的 created_at、updated_at
+	if err := r.data.db.WithContext(ctx).First(&po, shop.ID).Error; err != nil {
+		return nil, err
+	}
+	shop.CreatedAt = po.CreatedAt
+	shop.UpdatedAt = po.UpdatedAt
 	return shop, nil
 }
 
 // Get 根据ID获取店铺详情
 func (r *shopRepo) Get(ctx context.Context, id int64) (*biz.Shop, error) {
 	var po Shop
-	if err := r.data.db.WithContext(ctx).First(&po, id).Error; err != nil {
+	if err := r.data.db.WithContext(ctx).Where("id = ?", id).First(&po).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, biz.ErrShopNotFound
 		}

@@ -121,6 +121,25 @@ components:
             properties:
                 success:
                     type: boolean
+        order.v1.CreateOrderItem:
+            type: object
+            properties:
+                productId:
+                    type: string
+                skuId:
+                    type: string
+                productName:
+                    type: string
+                skuTitle:
+                    type: string
+                price:
+                    type: integer
+                    format: int32
+                quantity:
+                    type: integer
+                    format: int32
+                imageUrl:
+                    type: string
         order.v1.CreateOrderRequest:
             type: object
             properties:
@@ -133,7 +152,7 @@ components:
                 items:
                     type: array
                     items:
-                        $ref: '#/components/schemas/order.v1.OrderItem'
+                        $ref: '#/components/schemas/order.v1.CreateOrderItem'
         order.v1.CreateOrderResponse:
             type: object
             properties:

@@ -55,13 +55,19 @@ func (r *skuRepo) Update(ctx context.Context, sku *biz.Sku) (*biz.Sku, error) {
 	if err := r.data.db.WithContext(ctx).Model(&Sku{}).Where("id = ?", sku.ID).Updates(po).Error; err != nil {
 		return nil, err
 	}
+	// 更新后重新从数据库读取，获取真实的 created_at、updated_at
+	if err := r.data.db.WithContext(ctx).First(&po, sku.ID).Error; err != nil {
+		return nil, err
+	}
+	sku.CreatedAt = po.CreatedAt
+	sku.UpdatedAt = po.UpdatedAt
 	return sku, nil
 }
 
 // Get 根据ID获取SKU
 func (r *skuRepo) Get(ctx context.Context, id int64) (*biz.Sku, error) {
 	var po Sku
-	if err := r.data.db.WithContext(ctx).First(&po, id).Error; err != nil {
+	if err := r.data.db.WithContext(ctx).Where("id = ?", id).First(&po).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, biz.ErrSkuNotFound
 		}

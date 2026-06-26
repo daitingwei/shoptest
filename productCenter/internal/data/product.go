@@ -62,6 +62,28 @@ func (r *productRepo) Create(ctx context.Context, product *biz.Product, tagIDs [
 	if err != nil {
 		return nil, err
 	}
+	// 回填标签信息，确保返回结果包含完整标签数据
+	if len(tagIDs) > 0 {
+		var tags []ProductTag
+		if err := r.data.db.WithContext(ctx).Where("id IN ?", tagIDs).Find(&tags).Error; err != nil {
+			r.log.WithContext(ctx).Warnf("load product tags failed: %v", err)
+		} else {
+			for _, tag := range tags {
+				product.Tags = append(product.Tags, &biz.ProductTag{
+					ID:   tag.ID,
+					Name: tag.Name,
+					Sort: tag.Sort,
+				})
+			}
+		}
+	}
+	// 回填店铺名称，确保返回结果包含完整店铺信息
+	var shop Shop
+	if err := r.data.db.WithContext(ctx).First(&shop, product.ShopID).Error; err != nil {
+		r.log.WithContext(ctx).Warnf("load product shop failed: %v", err)
+	} else {
+		product.ShopName = shop.ShopName
+	}
 	return product, nil
 }
 
@@ -104,13 +126,35 @@ func (r *productRepo) Update(ctx context.Context, product *biz.Product, tagIDs [
 	if err != nil {
 		return nil, err
 	}
+	// 回填标签信息，确保返回结果包含完整标签数据
+	if len(tagIDs) > 0 {
+		var tags []ProductTag
+		if err := r.data.db.WithContext(ctx).Where("id IN ?", tagIDs).Find(&tags).Error; err != nil {
+			r.log.WithContext(ctx).Warnf("load product tags failed: %v", err)
+		} else {
+			for _, tag := range tags {
+				product.Tags = append(product.Tags, &biz.ProductTag{
+					ID:   tag.ID,
+					Name: tag.Name,
+					Sort: tag.Sort,
+				})
+			}
+		}
+	}
+	// 回填店铺名称，确保返回结果包含完整店铺信息
+	var shop Shop
+	if err := r.data.db.WithContext(ctx).First(&shop, product.ShopID).Error; err != nil {
+		r.log.WithContext(ctx).Warnf("load product shop failed: %v", err)
+	} else {
+		product.ShopName = shop.ShopName
+	}
 	return product, nil
 }
 
 // Get 根据ID获取商品详情（含标签信息）
 func (r *productRepo) Get(ctx context.Context, id int64) (*biz.Product, error) {
 	var po Product
-	if err := r.data.db.WithContext(ctx).Preload("Tags").Preload("Shop").First(&po, id).Error; err != nil {
+	if err := r.data.db.WithContext(ctx).Where("id = ?", id).Preload("Tags").Preload("Shop").First(&po).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, biz.ErrProductNotFound
 		}

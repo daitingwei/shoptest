@@ -49,13 +49,19 @@ func (r *productMediaRepo) Update(ctx context.Context, media *biz.ProductMedia) 
 	if err := r.data.db.WithContext(ctx).Model(&ProductMedia{}).Where("id = ?", media.ID).Updates(po).Error; err != nil {
 		return nil, err
 	}
+	// 更新后重新从数据库读取，获取真实的 created_at、updated_at
+	if err := r.data.db.WithContext(ctx).First(&po, media.ID).Error; err != nil {
+		return nil, err
+	}
+	media.CreatedAt = po.CreatedAt
+	media.UpdatedAt = po.UpdatedAt
 	return media, nil
 }
 
 // Get 根据ID获取商品副图
 func (r *productMediaRepo) Get(ctx context.Context, id int64) (*biz.ProductMedia, error) {
 	var po ProductMedia
-	if err := r.data.db.WithContext(ctx).First(&po, id).Error; err != nil {
+	if err := r.data.db.WithContext(ctx).Where("id = ?", id).First(&po).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, biz.ErrProductMediaNotFound
 		}

@@ -75,6 +75,9 @@ func (uc *ProductUseCase) Update(ctx context.Context, product *Product, tagIDs [
 
 // Get 根据ID获取商品详情
 func (uc *ProductUseCase) Get(ctx context.Context, id int64) (*Product, error) {
+	if id <= 0 {
+		return nil, ErrProductNotFound
+	}
 	uc.log.WithContext(ctx).Infof("GetProduct: id=%d", id)
 	return uc.repo.Get(ctx, id)
 }

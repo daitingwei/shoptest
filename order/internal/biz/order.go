@@ -2,10 +2,9 @@ package biz
 
 import (
 	"context"
-	"fmt"
 
-	v1 "order/api/order/v1"
 	"github.com/go-kratos/kratos/v2/errors"
+	v1 "order/api/order/v1"
 )
 
 // OrderRepo 订单数据仓库接口，由 data 层实现
@@ -53,7 +52,7 @@ func (uc *OrderUseCase) CreateOrder(ctx context.Context, requestID string, userI
 
 	// 3. 校验订单项
 	if len(items) == 0 {
-		return nil, fmt.Errorf(v1.ErrorReason_PARAMETER_ERROR.String())
+		return nil, errors.New(400, v1.ErrorReason_PARAMETER_ERROR.String(), "订单项不能为空")
 	}
 
 	// 4. 计算总价
@@ -85,6 +84,9 @@ func (uc *OrderUseCase) CreateOrder(ctx context.Context, requestID string, userI
 
 // GetOrder 根据ID获取订单
 func (uc *OrderUseCase) GetOrder(ctx context.Context, orderID int64) (*Order, error) {
+	if orderID <= 0 {
+		return nil, errors.New(400, v1.ErrorReason_PARAMETER_ERROR.String(), "订单ID无效")
+	}
 	return uc.repo.GetOrder(ctx, orderID)
 }
 
@@ -112,7 +114,7 @@ func (uc *OrderUseCase) CancelOrder(ctx context.Context, orderID int64) error {
 	}
 
 	if order.Status != int(OrderStatusPending) {
-		return fmt.Errorf(v1.ErrorReason_ORDER_CANCEL_FAILED.String())
+		return errors.New(400, v1.ErrorReason_ORDER_CANCEL_FAILED.String(), "仅待处理订单可取消")
 	}
 
 	return uc.repo.CancelOrder(ctx, orderID)

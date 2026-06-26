@@ -36,19 +36,21 @@ type OrderItem struct {
 type OrderStatus int32
 
 const (
-	OrderStatusPending   OrderStatus = 0
-	OrderStatusPaid      OrderStatus = 1
-	OrderStatusShipped   OrderStatus = 2
-	OrderStatusCompleted OrderStatus = 3
-	OrderStatusCancelled OrderStatus = 4
+	OrderStatusPending           OrderStatus = 0 // 待处理
+	OrderStatusUnpaid            OrderStatus = 1 // 待支付
+	OrderStatusAwaitingShipment  OrderStatus = 2 // 待发货
+	OrderStatusAwaitingCompleted OrderStatus = 3 // 待完成
+	OrderStatusCompleted         OrderStatus = 4 // 已完成
+	OrderStatusCancelled         OrderStatus = 5 // 已取消
+	OrderStatusFailed            OrderStatus = 6 // 失败的订单
 )
 
 type PayStatus int32
 
 const (
-	PayStatusUnpaid    PayStatus = 0
-	PayStatusPaid      PayStatus = 1
-	PayStatusFailed    PayStatus = 2
-	PayStatusRefunding PayStatus = 3
-	PayStatusRefunded  PayStatus = 4
+	PayStatusUnpaid    PayStatus = 0 // 未支付
+	PayStatusPaid      PayStatus = 1 // 已支付
+	PayStatusFailed    PayStatus = 2 // 支付失败
+	PayStatusRefunding PayStatus = 3 // 退款中
+	PayStatusRefunded  PayStatus = 4 // 已退款
 )

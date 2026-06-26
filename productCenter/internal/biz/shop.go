@@ -67,6 +67,9 @@ func (uc *ShopUseCase) Update(ctx context.Context, shop *Shop) (*Shop, error) {
 
 // Get 根据ID获取店铺详情
 func (uc *ShopUseCase) Get(ctx context.Context, id int64) (*Shop, error) {
+	if id <= 0 {
+		return nil, ErrShopNotFound
+	}
 	uc.log.WithContext(ctx).Infof("GetShop: id=%d", id)
 	return uc.repo.Get(ctx, id)
 }

@@ -47,13 +47,19 @@ func (r *productTagRepo) Update(ctx context.Context, tag *biz.ProductTag) (*biz.
 	if err := r.data.db.WithContext(ctx).Model(&ProductTag{}).Where("id = ?", tag.ID).Updates(po).Error; err != nil {
 		return nil, err
 	}
+	// 更新后重新从数据库读取，获取真实的 created_at、updated_at
+	if err := r.data.db.WithContext(ctx).First(&po, tag.ID).Error; err != nil {
+		return nil, err
+	}
+	tag.CreatedAt = po.CreatedAt
+	tag.UpdatedAt = po.UpdatedAt
 	return tag, nil
 }
 
 // Get 根据ID获取商品标签
 func (r *productTagRepo) Get(ctx context.Context, id int64) (*biz.ProductTag, error) {
 	var po ProductTag
-	if err := r.data.db.WithContext(ctx).First(&po, id).Error; err != nil {
+	if err := r.data.db.WithContext(ctx).Where("id = ?", id).First(&po).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, biz.ErrProductTagNotFound
 		}
