@@ -1,0 +1,68 @@
+name: gateway
+
+endpoints:
+  - path: /api/bff/*
+    method: GET,POST,PUT,DELETE
+    protocol: HTTP
+    backends:
+      - target: "127.0.0.1:8002"
+        weight: 100
+    timeout: 5s
+    middlewares:
+      - name: cors
+      - name: logging
+      - name: tracing
+      - name: transcoder
+      - name: circuitbreaker
+        options:
+          trigger_threshold: 50
+          trigger_request: 10
+          sleep_window: 10s
+      - name: bbr
+      - name: rewrite
+        options:
+          path_rewrite: /api/bff/(.*) /$1
+
+  - path: /api/order/*
+    method: GET,POST,PUT,DELETE
+    protocol: HTTP
+    backends:
+      - target: "127.0.0.1:8001"
+        weight: 100
+    timeout: 5s
+    middlewares:
+      - name: cors
+      - name: logging
+      - name: tracing
+      - name: transcoder
+      - name: circuitbreaker
+        options:
+          trigger_threshold: 50
+          trigger_request: 10
+          sleep_window: 10s
+      - name: bbr
+      - name: rewrite
+        options:
+          path_rewrite: /api/order/(.*) /$1
+
+  - path: /api/product/*
+    method: GET,POST,PUT,DELETE
+    protocol: HTTP
+    backends:
+      - target: "127.0.0.1:8000"
+        weight: 100
+    timeout: 5s
+    middlewares:
+      - name: cors
+      - name: logging
+      - name: tracing
+      - name: transcoder
+      - name: circuitbreaker
+        options:
+          trigger_threshold: 50
+          trigger_request: 10
+          sleep_window: 10s
+      - name: bbr
+      - name: rewrite
+        options:
+          path_rewrite: /api/product/(.*) /$1
