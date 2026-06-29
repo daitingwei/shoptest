@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
+	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	kratosgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/google/wire"
 	"google.golang.org/grpc"
@@ -28,6 +29,7 @@ func NewData(c *conf.Data, disc registry.Discovery, logger log.Logger) (*Data, f
 		context.Background(),
 		kratosgrpc.WithEndpoint("discovery:///productCenter"),
 		kratosgrpc.WithDiscovery(disc),
+		kratosgrpc.WithMiddleware(tracing.Client()),
 	)
 	if err != nil {
 		return nil, nil, err
@@ -37,6 +39,7 @@ func NewData(c *conf.Data, disc registry.Discovery, logger log.Logger) (*Data, f
 		context.Background(),
 		kratosgrpc.WithEndpoint("discovery:///order"),
 		kratosgrpc.WithDiscovery(disc),
+		kratosgrpc.WithMiddleware(tracing.Client()),
 	)
 	if err != nil {
 		return nil, nil, err

@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 
 	"bff/internal/conf"
 	"shpotest/pkg/nacoshttp"
+	"shpotest/pkg/oteltracing"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
@@ -70,6 +72,12 @@ func main() {
 	if err := c.Scan(&bc); err != nil {
 		panic(err)
 	}
+
+	tp, err := oteltracing.InitTracerProvider(Name, "")
+	if err != nil {
+		panic(err)
+	}
+	defer tp.Shutdown(context.Background())
 
 	r := nacoshttp.New(bc.Registry.Nacos.Address, bc.Registry.Nacos.NamespaceId)
 

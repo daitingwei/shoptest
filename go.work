@@ -6,5 +6,6 @@ use (
 	./bff
 	./order
 	./pkg/nacoshttp
+	./pkg/oteltracing
 	./productCenter
 )

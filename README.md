@@ -6,7 +6,7 @@
 
 ```
 shpotest/
-├── productCenter/          # 商品中心服务（端口 gRPC:9000 HTTP:8000）
+├── productCenter/          # 商品中心服务（端口 HTTP:8000 gRPC:9003）
 │   ├── api/                # Proto 定义 + 生成代码
 │   │   ├── product/v1/     # 商品接口
 │   │   ├── shop/v1/        # 店铺接口
@@ -21,7 +21,7 @@ shpotest/
 │       ├── service/        # 服务层：Proto → Biz 适配
 │       └── server/         # gRPC + HTTP 服务器
 │
-├── order/                  # 订单服务（端口 gRPC:9001 HTTP:8001）
+├── order/                  # 订单服务（端口 HTTP:8001 gRPC:9004）
 │   ├── api/order/v1/       # 订单接口
 │   ├── cmd/order/          # 程序入口 + Wire
 │   ├── configs/            # 配置文件
@@ -31,7 +31,7 @@ shpotest/
 │       ├── service/        # 服务层：Proto → Biz 适配
 │       └── server/         # gRPC + HTTP 服务器
 │
-├── bff/                    # BFF 聚合层（端口 gRPC:9002 HTTP:8002）
+├── bff/                    # BFF 聚合层（端口 HTTP:8002 gRPC:9002）
 │   ├── api/bff/v1/         # BFF 聚合接口
 │   ├── cmd/bff/            # 程序入口 + Wire
 │   ├── configs/            # 配置文件
@@ -65,9 +65,9 @@ shpotest/
 
 | 服务 | gRPC | HTTP | 职责 |
 |---|---|---|---|
-| productCenter | 9000 | 8000 | 店铺、商品、标签、SKU、副图 CRUD + 库存扣减/回补 |
-| order | 9001 | 8001 | 订单创建（幂等 + 锁库存）、查询、状态管理、取消 |
-| bff | 9002 | 8002 | 面向前端的聚合层：商品详情、订单创建（自动生成 request_id） |
+| productCenter | 9003 | 8000 | 店铺、商品、标签、SKU、副图 CRUD + 库存扣减/回补 |
+| order | 9004 | 8001 | 订单创建（幂等 + 锁库存）、查询、状态管理、取消 |
+| bff | 9002 | 8002 | 面向前端的聚合层：商品详情、商品列表、店铺首页、创建订单 |
 
 ## 核心功能
 
@@ -88,7 +88,7 @@ shpotest/
 - 商品详情页（聚合商品 + 店铺 + 标签 + SKU + 副图）
 - 商品列表页（商品 + 店铺名 + 标签）
 - 店铺首页（店铺信息 + 商品列表）
-- 创建订单（自动生成 request_id，前端无感知幂等）
+- 创建订单（自动生成 request_id，自动填充商品名称/SKU名称，前端无感知幂等）
 
 ## 订单创建完整链路
 
@@ -96,6 +96,7 @@ shpotest/
 前端 → POST /api/v1/bff/orders {user_id, shop_id, items}
   │
   ├─ BFF Biz: requestID = uuid.NewString()
+  ├─ BFF Repo: 根据 product_id/sku_id 调 productCenter 自动填充名称
   ├─ BFF Repo: gRPC → Order.CreateOrder(requestID, ...)
   │     │
   │     ├─ Redis SET NX + DB 查询 → 幂等判断
@@ -187,6 +188,30 @@ CREATE TABLE orders (
 
 productCenter 的店铺、商品、标签、SKU、副图接口见各 proto 文件定义。
 
+## 订单状态与支付状态
+
+### 订单状态 (OrderStatus)
+
+| 值 | 枚举 | 说明 |
+|---|------|------|
+| 0 | PENDING | 待处理 |
+| 1 | UNPAID | 待支付 |
+| 2 | AWAITING_SHIPMENT | 待发货（自动写入 pay_time） |
+| 3 | AWAITING_COMPLETED | 待完成（自动写入 ship_time） |
+| 4 | COMPLETED | 已完成（自动写入 confirm_time） |
+| 5 | CANCELLED | 已取消 |
+| 6 | FAILED | 失败的订单 |
+
+### 支付状态 (PayStatus)
+
+| 值 | 枚举 | 说明 |
+|---|------|------|
+| 0 | UNPAID | 未支付 |
+| 1 | PAID | 已支付 |
+| 2 | FAILED | 支付失败 |
+| 3 | REFUNDING | 退款中 |
+| 4 | REFUNDED | 已退款 |
+
 ## 快速开始
 
 ### 前置条件
@@ -236,10 +261,10 @@ curl -X POST http://127.0.0.1:8000/api/v1/products \
   -H "Content-Type: application/json" \
   -d '{"shop_id":1,"name":"iPhone 15 Pro","main_image_url":"https://example.com/iphone.jpg","price":799900,"status":1}'
 
-# 创建订单（通过 BFF）
+# 创建订单（通过 BFF，product_name/sku_title 由 BFF 自动填充）
 curl -X POST http://127.0.0.1:8002/api/v1/bff/orders \
   -H "Content-Type: application/json" \
-  -d '{"user_id":1,"shop_id":1,"items":[{"product_id":1,"sku_id":1,"product_name":"iPhone 15 Pro","price":799900,"quantity":1}]}'
+  -d '{"user_id":1,"shop_id":1,"items":[{"product_id":1,"sku_id":1,"price":799900,"quantity":1}]}'
 ```
 
 ## 分层架构
@@ -295,9 +320,10 @@ cd bff && make api
 - DB 查询：Redis 不可用时的兜底
 - 唯一索引：最终的原子性保证（request_id UNIQUE）
 
-### 3. 为什么 BFF 自动生成 request_id？
+### 3. 为什么 BFF 自动生成 request_id 和自动填充名称？
 
 - 前端无感知，不需要管理幂等 Key
+- 商品名/SKU名通过 gRPC 查询 productCenter 自动填入，前端仅需传 product_id 和 sku_id
 - 降低前端接入复杂度
 - 可后续升级为前端传 `X-Idempotency-Key` header
 

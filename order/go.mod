@@ -16,6 +16,17 @@ require (
 	gorm.io/gorm v1.31.1
 )
 
+require shpotest/pkg/oteltracing v0.0.0-00010101000000-000000000000
+
+require (
+	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.28.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.28.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.28.0 // indirect
+	go.opentelemetry.io/proto/otlp v1.3.1 // indirect
+)
+
 require (
 	dario.cat/mergo v1.0.0 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
@@ -44,3 +55,5 @@ require (
 )
 
 replace productCenter => ../productCenter
+
+replace shpotest/pkg/oteltracing => ../pkg/oteltracing

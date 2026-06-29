@@ -9,6 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/google/wire"
 	kratosgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
+	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
 	"gorm.io/driver/mysql"
@@ -48,6 +49,7 @@ func NewData(c *conf.Data, disc registry.Discovery, logger klog.Logger) (*Data, 
 		context.Background(),
 		kratosgrpc.WithEndpoint("discovery:///productCenter"),
 		kratosgrpc.WithDiscovery(disc),
+		kratosgrpc.WithMiddleware(tracing.Client()),
 	)
 	if err != nil {
 		return nil, nil, err
