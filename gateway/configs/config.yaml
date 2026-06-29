@@ -1,8 +1,9 @@
 name: gateway
 
 endpoints:
-  - path: /api/bff/*
-    method: GET,POST,PUT,DELETE
+  # BFF：/api/v1/bff/* 透传到 bff:8002
+  - path: /api/v1/bff/*
+    method: "*"
     protocol: HTTP
     backends:
       - target: "127.0.0.1:8002"
@@ -15,16 +16,17 @@ endpoints:
       - name: transcoder
       - name: circuitbreaker
         options:
-          trigger_threshold: 50
-          trigger_request: 10
-          sleep_window: 10s
+          '@type': type.googleapis.com/gateway.middleware.circuitbreaker.v1.CircuitBreaker
+          successRatio:
+            success: 0.5
+            request: 10
+            bucket: 10
+            window: 10s
       - name: bbr
-      - name: rewrite
-        options:
-          path_rewrite: /api/bff/(.*) /$1
 
-  - path: /api/order/*
-    method: GET,POST,PUT,DELETE
+  # Order：/api/v1/orders* 透传到 order:8001
+  - path: /api/v1/orders*
+    method: "*"
     protocol: HTTP
     backends:
       - target: "127.0.0.1:8001"
@@ -37,16 +39,17 @@ endpoints:
       - name: transcoder
       - name: circuitbreaker
         options:
-          trigger_threshold: 50
-          trigger_request: 10
-          sleep_window: 10s
+          '@type': type.googleapis.com/gateway.middleware.circuitbreaker.v1.CircuitBreaker
+          successRatio:
+            success: 0.5
+            request: 10
+            bucket: 10
+            window: 10s
       - name: bbr
-      - name: rewrite
-        options:
-          path_rewrite: /api/order/(.*) /$1
 
-  - path: /api/product/*
-    method: GET,POST,PUT,DELETE
+  # ProductCenter：/api/v1/* 透传到 productCenter:8000
+  - path: /api/v1/*
+    method: "*"
     protocol: HTTP
     backends:
       - target: "127.0.0.1:8000"
@@ -59,10 +62,10 @@ endpoints:
       - name: transcoder
       - name: circuitbreaker
         options:
-          trigger_threshold: 50
-          trigger_request: 10
-          sleep_window: 10s
+          '@type': type.googleapis.com/gateway.middleware.circuitbreaker.v1.CircuitBreaker
+          successRatio:
+            success: 0.5
+            request: 10
+            bucket: 10
+            window: 10s
       - name: bbr
-      - name: rewrite
-        options:
-          path_rewrite: /api/product/(.*) /$1

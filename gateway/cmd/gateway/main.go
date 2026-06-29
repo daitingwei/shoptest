@@ -12,6 +12,7 @@ import (
 	configLoader "github.com/go-kratos/gateway/config/config-loader"
 	"github.com/go-kratos/gateway/discovery"
 	"github.com/go-kratos/gateway/middleware"
+	"github.com/go-kratos/gateway/middleware/circuitbreaker"
 	"github.com/go-kratos/gateway/proxy"
 	"github.com/go-kratos/gateway/proxy/debug"
 	"github.com/go-kratos/gateway/server"
@@ -22,13 +23,11 @@ import (
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport"
 
-	_ "github.com/go-kratos/gateway/discovery/consul"
 	_ "gateway/discovery/nacos"
+	_ "github.com/go-kratos/gateway/discovery/consul"
 	_ "github.com/go-kratos/gateway/middleware/bbr"
-	_ "github.com/go-kratos/gateway/middleware/circuitbreaker"
 	_ "github.com/go-kratos/gateway/middleware/cors"
 	_ "github.com/go-kratos/gateway/middleware/logging"
-	_ "github.com/go-kratos/gateway/middleware/rewrite"
 	_ "github.com/go-kratos/gateway/middleware/tracing"
 	_ "github.com/go-kratos/gateway/middleware/transcoder"
 	_ "go.uber.org/automaxprocs"
@@ -109,14 +108,6 @@ func main() {
 		"span.id", tracing.SpanID(),
 	)
 
-	clientFactory := client.NewFactory(makeDiscovery())
-	p, err := proxy.New(clientFactory, middleware.Create)
-	if err != nil {
-		log.Fatalf("failed to new proxy: %v", err)
-	}
-
-	_ = logger
-
 	ctx := context.Background()
 	var ctrlLoader *configLoader.CtrlConfigLoader
 	if ctrlService != "" {
@@ -137,23 +128,36 @@ func main() {
 	}
 	defer confLoader.Close()
 
-	bc, err := confLoader.Load(context.Background())
+	bc, err := confLoader.Load(ctx)
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
+	clientFactory := client.NewFactory(makeDiscovery())
 	buildContext := client.NewBuildContext(bc)
+	// 注册熔断器中间件（V2 中间件需要 buildContext 和 clientFactory 才能创建）
+	circuitbreaker.Init(buildContext, clientFactory)
+
+	p, err := proxy.New(clientFactory, middleware.Create)
+	if err != nil {
+		log.Fatalf("failed to new proxy: %v", err)
+	}
+
+	_ = logger
+
 	if err := p.Update(buildContext, bc); err != nil {
 		log.Fatalf("failed to update service config: %v", err)
 	}
 
 	reloader := func() error {
-		bc, err := confLoader.Load(context.Background())
+		bc, err := confLoader.Load(ctx)
 		if err != nil {
 			log.Errorf("failed to load config: %v", err)
 			return err
 		}
 		buildContext := client.NewBuildContext(bc)
+		// 配置热更新时同步更新熔断器依赖的 buildContext
+		circuitbreaker.SetBuildContext(buildContext)
 		if err := p.Update(buildContext, bc); err != nil {
 			log.Errorf("failed to update service config: %v", err)
 			return err
